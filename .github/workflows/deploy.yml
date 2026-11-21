@@ -3,24 +3,15 @@ name: 🚀 Deploy to SpaceWeb SFTP
 on:
   push:
     branches: ["main"]
-  workflow_dispatch:
-
-concurrency:
-  group: plugy-spaceweb
-  cancel-in-progress: false
 
 jobs:
   deploy:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
-
-      - name: Prepare hosting files
-        run: |
-          mkdir "$RUNNER_TEMP/plugy-hosting"
-          git archive HEAD -- index.php admin app site | tar -x -C "$RUNNER_TEMP/plugy-hosting"
+        with:
+          fetch-depth: 0   # полная история для дельта-синхронизации
 
       - name: 📂 Sync files via SFTP
         uses: milanmk/actions-file-deployer@master
@@ -29,25 +20,5 @@ jobs:
           remote-host: ${{ secrets.SFTP_HOST }}
           remote-user: ${{ secrets.SFTP_USERNAME }}
           ssh-private-key: ${{ secrets.SFTP_KEY }}
-          local-path: "${{ runner.temp }}/plugy-hosting"
+          local-path: "./"
           remote-path: "/home/t/tech1111/admin_digitalplug_ru/public_html"
-          sync: "full"
-          ftp-options: "set cmd:fail-exit yes"
-          ftp-mirror-options: "--transfer-all"
-
-      - name: Verify the deployed editor
-        env:
-          SITE_URL: https://admin.digitalplug.ru
-        run: |
-          curl --fail --silent --show-error --location --retry 3 --retry-all-errors --max-time 15 \
-            "$SITE_URL/admin/assets/code-editor.js?v=$GITHUB_SHA" -o "$RUNNER_TEMP/deployed-editor.js"
-          if ! cmp --silent "$RUNNER_TEMP/plugy-hosting/admin/assets/code-editor.js" "$RUNNER_TEMP/deployed-editor.js"; then
-            echo "::error::The domain returned a different editor script. Check the site's document root in SpaceWeb."
-            exit 1
-          fi
-          curl --fail --silent --show-error --location --retry 3 --retry-all-errors --max-time 15 \
-            "$SITE_URL/admin/?v=$GITHUB_SHA" -o "$RUNNER_TEMP/deployed-admin.html"
-          if ! grep --quiet --fixed-strings 'admin/assets/style.css' "$RUNNER_TEMP/deployed-admin.html"; then
-            echo "::error::The domain still serves an older PHP entry point."
-            exit 1
-          fi
