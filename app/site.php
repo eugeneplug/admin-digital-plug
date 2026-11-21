@@ -1,9 +1,8 @@
 <?php
 declare(strict_types=1);
 
-define('PLUGY_ENTRY', true);
 $root = './';
-require dirname(__DIR__) . '/app/bootstrap.php';
+require __DIR__ . '/bootstrap.php';
 $setup = query('setup') === '1';
 securityHeaders(admin: $setup);
 if (($_SERVER['PATH_INFO'] ?? '') !== '') {
@@ -11,7 +10,7 @@ if (($_SERVER['PATH_INFO'] ?? '') !== '') {
     problem(404, 'Страница не найдена', 'Проверьте адрес или вернитесь на главную.', $siteRoot);
 }
 if ($setup) {
-    require dirname(__DIR__) . '/app/install.php';
+    require __DIR__ . '/install.php';
     exit;
 }
 if (array_key_exists('theme_asset', $_GET)) {
@@ -44,7 +43,7 @@ if (array_key_exists('article', $_GET)) {
     $articles = articles($db, publishedOnly: true);
 }
 ob_start();
-require dirname(__DIR__) . '/app/views/site.php';
+require __DIR__ . '/views/site.php';
 $content = ob_get_clean();
 
 ob_start();

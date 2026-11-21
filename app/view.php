@@ -18,7 +18,7 @@ function articleUrl(string $slug, string $root = './'): string
 
 function assetUrl(string $name, string $root): string
 {
-    return $root . (defined('PLUGY_ASSET_PREFIX') ? PLUGY_ASSET_PREFIX : '') . 'assets/' . $name;
+    return $root . 'admin/assets/' . $name;
 }
 
 function dateLabel(int $timestamp): string

@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-define('PLUGY_ENTRY', true);
 $root = '../';
-require dirname(__DIR__, 2) . '/app/bootstrap.php';
+$app = dirname(__DIR__) . '/app';
+require $app . '/bootstrap.php';
 securityHeaders(admin: true);
 
 $path = explode('?', $_SERVER['REQUEST_URI'], 2)[0];
@@ -53,7 +53,7 @@ if (!$signedIn) {
                 : 'Проверьте логин и пароль.';
         }
     }
-    require dirname(__DIR__, 2) . '/app/views/login.php';
+    require $app . '/views/login.php';
     exit;
 }
 
@@ -166,4 +166,4 @@ if ($view === 'dashboard' || $view === 'blocks') {
 if ($view === 'dashboard' || $view === 'articles') {
     $articles = articles($db);
 }
-require dirname(__DIR__, 2) . '/app/views/admin.php';
+require $app . '/views/admin.php';
