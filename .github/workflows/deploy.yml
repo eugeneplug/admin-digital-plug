@@ -3,22 +3,30 @@ name: 🚀 Deploy to SpaceWeb SFTP
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: spaceweb-production
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: 🚚 Get latest code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0   # полная история для дельта-синхронизации
-
+      - name: Check deployment error handling
+        run: python3 -B .github/scripts/test_deploy.py
       - name: 📂 Sync files via SFTP
-        uses: milanmk/actions-file-deployer@master
-        with:
-          remote-protocol: "sftp"
-          remote-host: ${{ secrets.SFTP_HOST }}
-          remote-user: ${{ secrets.SFTP_USERNAME }}
-          ssh-private-key: ${{ secrets.SFTP_KEY }}
-          local-path: "./"
-          remote-path: "/home/t/tech1111/admin_digitalplug_ru/public_html"
+        shell: bash
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_KEY: ${{ secrets.SFTP_KEY }}
+          REMOTE_PATH: /home/t/tech1111/admin_digitalplug_ru/public_html
+          SITE_URL: https://admin.digitalplug.ru
+        run: python3 .github/scripts/deploy.py
