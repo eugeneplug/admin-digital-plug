@@ -178,6 +178,7 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
     transition: background-color .2s, color .2s, border-color .2s;
 }
 .sidebar-nav > a .icon, .sign-out .icon { width: 18px; height: 18px; }
+.sidebar-nav > a span { min-width: 0; overflow-wrap: anywhere; }
 .sidebar-nav > a:hover, .sign-out:hover { color: #fff; background: #ffffff0c; }
 .sidebar-nav > a[aria-current] { color: #f4f8ff; background: #1d5fe038; border-color: #397aff53; font-weight: 650; }
 .sidebar-nav > a[aria-current] .icon { color: #89b5ff; }

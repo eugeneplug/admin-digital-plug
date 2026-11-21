@@ -72,7 +72,11 @@ if ($method === 'POST' && post('action') === 'upload-image') {
 }
 
 $view = query('view') ?: 'dashboard';
-if (in_array($view, ['fields', 'field-group', 'pages', 'page'], true)) {
+if (in_array($view, ['record-types', 'record-type'], true)) {
+    require $app . '/records-admin.php';
+    exit;
+}
+if (in_array($view, ['fields', 'field-group', 'pages', 'page', 'records', 'record'], true)) {
     require $app . '/fields-admin.php';
     exit;
 }

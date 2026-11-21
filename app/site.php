@@ -18,19 +18,21 @@ if (array_key_exists('theme_asset', $_GET) || array_key_exists('article', $_GET)
 }
 if (array_key_exists('media', $_GET)) serveFieldImage(query('media'));
 $db = openSite($root);
-$slug = query('page') ?: 'home';
-$read = $db->prepare("SELECT * FROM pages WHERE slug = ? AND status = 'published'");
+$isRecord = array_key_exists('record', $_GET);
+$slug = $isRecord ? query('record') : (query('page') ?: 'home');
+$table = $isRecord ? 'records' : 'pages';
+$read = $db->prepare("SELECT * FROM $table WHERE slug = ? AND status = 'published'");
 $read->execute([$slug]);
 $page = $read->fetch();
 if (!$page) {
     problem(404, 'Страница не найдена', 'Проверьте ссылку.', $root);
 }
-fieldContext('page:' . $page['id']);
+fieldContext(($isRecord ? 'record:' : 'page:') . $page['id']);
 
 $level = ob_get_level();
 ob_start();
 try {
-    template('index', ['page' => $page, 'title' => $page['title'] . ' · Plugy Engine']);
+    template('index', ['page' => $page, 'record' => $isRecord ? $page : null, 'title' => $page['title'] . ' · Plugy Engine']);
     ob_end_flush();
 } catch (Throwable $error) {
     while (ob_get_level() > $level) ob_end_clean();

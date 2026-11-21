@@ -1,16 +1,24 @@
 <?php require dirname(__DIR__) . '/guard.php'; ?>
 <?php if (in_array($view, ['fields', 'field-group'], true)): ?>
-    <?php $pageNames = $db->query('SELECT id, title FROM pages ORDER BY id')->fetchAll(PDO::FETCH_KEY_PAIR); ?>
+    <?php
+    $pageNames = $db->query('SELECT id, title FROM pages ORDER BY id')->fetchAll(PDO::FETCH_KEY_PAIR);
+    $typeNames = array_column($sidebarRecordTypes, 'title', 'id');
+    $locations = ['page:0' => 'На всех страницах'];
+    foreach ($pageNames as $pageId => $pageTitle) $locations['page:' . $pageId] = $pageTitle;
+    foreach ($typeNames as $locationTypeId => $typeTitle) $locations['record:' . $locationTypeId] = 'Группа записей · ' . $typeTitle;
+    ?>
 <?php else: ?>
     <div class="page-heading">
-        <div><h1><?= e($title) ?></h1><p>Управляйте содержимым сайта.</p></div>
-        <?php if ($view === 'pages'): ?><a class="button button-primary" href="<?= e(adminUrl('page')) ?>"><?php icon('plus'); ?> Добавить</a><?php endif; ?>
+        <div><h1><?= e($title) ?></h1><p><?= $recordMode ? ($entryEditor ? 'Заполните содержимое и поля записи.' : 'Добавляйте записи в эту группу.') : 'Управляйте содержимым сайта.' ?></p></div>
+        <?php if (!$entryEditor): ?>
+            <a class="button button-primary" href="<?= e($recordMode ? recordAdminUrl('record', $typeId) : adminUrl('page')) ?>"><?php icon('plus'); ?> <?= $recordMode ? 'Новая запись' : 'Добавить' ?></a>
+        <?php endif; ?>
     </div>
 <?php endif; ?>
 <?php if ($view === 'fields'): ?>
-    <?php $groups = array_filter(fieldGroups($db), static fn(array $group): bool => $group['scope'] === 'page'); ?>
+    <?php $groups = array_filter(fieldGroups($db), static fn(array $group): bool => in_array($group['scope'], ['page', 'record'], true)); ?>
     <div class="page-heading fields-heading">
-        <div><h1><?= e($title) ?></h1><p>Создавайте поля и назначайте их страницам.</p></div>
+        <div><h1><?= e($title) ?></h1><p>Назначайте поля страницам и группам записей.</p></div>
         <a class="button button-primary" href="<?= e(adminUrl('field-group')) ?>"><?php icon('plus'); ?> Новая группа</a>
     </div>
     <section class="panel groups-panel" data-group-list aria-label="Группы полей">
@@ -27,12 +35,11 @@
                         <input type="search" aria-label="Поиск групп" placeholder="Поиск групп" data-group-search>
                     </label>
                     <div class="field">
-                        <label class="fields-sr-only" for="groups-target">Страница</label>
+                        <label class="fields-sr-only" for="groups-target">Место показа</label>
                         <select id="groups-target" data-custom-select data-group-filter>
-                            <option value="">Любая страница</option>
-                            <option value="0">На всех страницах</option>
-                            <?php foreach ($pageNames as $pageId => $pageTitle): ?>
-                                <option value="<?= (int) $pageId ?>"><?= e($pageTitle) ?></option>
+                            <option value="">Все места</option>
+                            <?php foreach ($locations as $location => $label): ?>
+                                <option value="<?= e($location) ?>"><?= e($label) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
@@ -45,10 +52,10 @@
                 <thead><tr><th scope="col">Название группы</th><th scope="col">Где показывать</th><th scope="col">Поля</th><th scope="col"><span class="fields-sr-only">Действие</span></th></tr></thead>
                 <tbody>
                     <?php foreach ($groups as $group): ?>
-                        <?php $target = (int) $group['target_id']; ?>
-                        <tr data-group-row data-target="<?= $target ?>">
+                        <?php $location = $group['scope'] . ':' . $group['target_id']; ?>
+                        <tr data-group-row data-target="<?= e($location) ?>">
                             <th scope="row"><a class="group-name" href="<?= e(adminUrl('field-group', (int) $group['id'])) ?>" data-group-name><?= e($group['title']) ?></a></th>
-                            <td><span class="group-location"><?php icon($target ? 'file' : 'globe'); ?> <?= e($target ? ($pageNames[$target] ?? 'Удалённая страница') : 'Все страницы') ?></span></td>
+                            <td><span class="group-location"><?php icon($group['scope'] === 'record' ? 'grid' : ($group['target_id'] ? 'file' : 'globe')); ?> <?= e($locations[$location] ?? 'Место удалено') ?></span></td>
                             <td><span class="fields-count"><?= count($group['fields']) ?></span></td>
                             <td><a class="icon-button group-edit" href="<?= e(adminUrl('field-group', (int) $group['id'])) ?>" aria-label="<?= e('Редактировать группу «' . $group['title'] . '»') ?>" title="Редактировать"><?php icon('edit'); ?></a></td>
                         </tr>
@@ -63,14 +70,25 @@
             <div class="fields-empty">
                 <span class="fields-tile"><?php icon('layers'); ?></span>
                 <p><strong>Групп полей пока нет</strong></p>
-                <p>Добавьте первую группу и назначьте её странице.</p>
+                <p>Добавьте первую группу и выберите место показа.</p>
             </div>
         <?php endif; ?>
     </section>
-<?php elseif ($view === 'pages'): ?>
+<?php elseif (in_array($view, ['pages', 'records'], true)): ?>
+    <?php
+    if ($recordMode) {
+        $entries = $db->prepare('SELECT * FROM records WHERE type_id = ? ORDER BY id DESC');
+        $entries->execute([$typeId]);
+    } else {
+        $entries = $db->query('SELECT * FROM pages ORDER BY id');
+    }
+    $items = $entries->fetchAll();
+    ?>
     <div class="panel field-list">
-    <?php foreach ($db->query('SELECT * FROM pages ORDER BY id')->fetchAll() as $item): ?>
-        <a class="field-list-row" href="<?= e(adminUrl('page', (int) $item['id'])) ?>"><strong><?= e($item['title']) ?></strong><span><?= e($item['slug']) ?></span><small><?= $item['status'] === 'published' ? 'Опубликована' : 'Черновик' ?></small></a>
+    <?php if (!$items): ?><p class="field-help">В этой группе пока нет записей.</p><?php endif; ?>
+    <?php foreach ($items as $item): ?>
+        <?php $url = $recordMode ? recordAdminUrl('record', $typeId, (int) $item['id']) : adminUrl('page', (int) $item['id']); ?>
+        <a class="field-list-row" href="<?= e($url) ?>"><strong><?= e($item['title']) ?></strong><span><?= e($item['slug']) ?></span><small><?= $item['status'] === 'published' ? 'Опубликована' : 'Черновик' ?></small></a>
     <?php endforeach; ?>
     </div>
 <?php elseif ($view === 'field-group'): ?>
@@ -109,35 +127,37 @@
                     </div>
                     <div class="field">
                         <label for="group-target">Где показывать</label>
-                        <select id="group-target" name="target_id" data-custom-select aria-describedby="group-target-help">
-                            <option value="0">На всех страницах</option>
-                            <?php $target = (int) $record['target_id']; ?>
-                            <?php if ($target && !isset($pageNames[$target])): ?>
-                                <option value="<?= $target ?>" selected>Удалённая страница</option>
+                        <select id="group-target" name="location" data-custom-select aria-describedby="group-target-help">
+                            <?php $target = $record['scope'] . ':' . $record['target_id']; ?>
+                            <?php if (!isset($locations[$target])): ?>
+                                <option value="<?= e($target) ?>" selected>Место удалено</option>
                             <?php endif; ?>
-                            <?php foreach ($pageNames as $pageId => $pageTitle): ?>
-                                <option value="<?= (int) $pageId ?>" <?= $target === (int) $pageId ? 'selected' : '' ?>><?= e($pageTitle) ?></option>
+                            <?php foreach ($locations as $location => $label): ?>
+                                <option value="<?= e($location) ?>" <?= $target === $location ? 'selected' : '' ?>><?= e($label) ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <small id="group-target-help">Поля появятся в редакторе выбранной страницы.</small>
+                        <small id="group-target-help">Поля появятся в редакторе выбранной страницы или всех записей группы.</small>
                     </div>
                 </div>
             </section>
         </div>
     </form>
-<?php elseif ($view === 'page'): ?>
-    <?php if ($id && $record['status'] === 'published'): ?><p class="field-help"><a class="text-link" href="<?= e('../?page=' . rawurlencode($record['slug'])) ?>" target="_blank" rel="noopener">Открыть страницу ↗</a></p><?php endif; ?>
+<?php elseif ($entryEditor): ?>
+    <?php if ($recordMode): ?><a class="text-link back-link" href="<?= e($entriesUrl) ?>"><?php icon('chevron'); ?> <?= e($recordType['title']) ?></a><?php endif; ?>
+    <?php if ($id && $record['status'] === 'published'): ?>
+        <p class="field-help"><a class="text-link" href="<?= e($recordMode ? recordUrl($record['slug'], '../') : '../?page=' . rawurlencode($record['slug'])) ?>" target="_blank" rel="noopener">Открыть на сайте ↗</a></p>
+    <?php endif; ?>
     <form class="panel editor-form" method="post"><?php csrfField(); ?>
         <div class="field"><label for="page-title">Название</label><input id="page-title" name="title" value="<?= e($record['title']) ?>" required maxlength="120"></div>
         <div class="field-grid">
-            <div class="field"><label for="page-slug">Адрес</label><input id="page-slug" name="slug" value="<?= e($record['slug']) ?>" maxlength="100" <?= $record['slug'] === 'home' ? 'readonly' : '' ?>></div>
+            <div class="field"><label for="page-slug">Адрес</label><input id="page-slug" name="slug" value="<?= e($record['slug']) ?>" maxlength="100" <?= !$recordMode && $record['slug'] === 'home' ? 'readonly' : '' ?>></div>
             <div class="field"><label for="page-status">Статус</label><select id="page-status" name="status"><option value="draft" <?= $record['status'] === 'draft' ? 'selected' : '' ?>>Черновик</option><option value="published" <?= $record['status'] === 'published' ? 'selected' : '' ?>>Опубликована</option></select></div>
         </div>
         <div class="field"><label for="page-body">Текст</label><textarea id="page-body" name="body" rows="6" maxlength="60000"><?= e($record['body']) ?></textarea></div>
-        <?php fieldValuesForm($db, 'page', $id); ?>
-        <button class="button button-primary" name="action" value="save-page">Сохранить страницу</button>
+        <?php fieldValuesForm($db, $entryScope, $id, $recordMode ? $typeId : null); ?>
+        <button class="button button-primary" name="action" value="save-page"><?= $recordMode ? 'Сохранить запись' : 'Сохранить страницу' ?></button>
     </form>
 <?php endif; ?>
-<?php if ($id && ($view === 'field-group' || ($view === 'page' && $record['slug'] !== 'home'))): ?>
-    <details class="delete-section"><summary>Удалить <?= $view === 'page' ? 'страницу' : 'группу' ?></summary><form method="post"><?php csrfField(); ?><p>Запись и её значения будут удалены без возможности восстановления.</p><button class="button button-danger" name="action" value="<?= $view === 'page' ? 'delete-page' : 'delete-group' ?>">Подтвердить удаление</button></form></details>
+<?php if ($id && ($view === 'field-group' || ($entryEditor && ($recordMode || $record['slug'] !== 'home')))): ?>
+    <details class="delete-section"><summary>Удалить <?= $recordMode ? 'запись' : ($entryEditor ? 'страницу' : 'группу') ?></summary><form method="post"><?php csrfField(); ?><p>Запись и её значения будут удалены без возможности восстановления.</p><button class="button button-danger" name="action" value="<?= $entryEditor ? 'delete-page' : 'delete-group' ?>">Подтвердить удаление</button></form></details>
 <?php endif; ?>

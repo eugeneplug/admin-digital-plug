@@ -5,7 +5,13 @@ $managementNav = [
     'dashboard' => ['grid', 'Обзор'],
     'pages' => ['file', 'Страницы'],
 ];
+$sidebarRecordTypes = recordTypes($db);
+foreach ($sidebarRecordTypes as $sidebarType) {
+    $sidebarTypeId = (int) $sidebarType['id'];
+    $managementNav['records-' . $sidebarTypeId] = ['file', $sidebarType['title'], recordAdminUrl('records', $sidebarTypeId)];
+}
 $developerNav = [
+    'record-types' => ['grid', 'Группы записей'],
     'fields' => ['layers', 'Custom Fields'],
     'code' => ['code', 'Редактор кода'],
     'settings' => ['settings', 'Настройки'],
@@ -44,7 +50,7 @@ $nav = $managementNav + $developerNav;
         <nav class="sidebar-nav" aria-label="Панель управления">
             <span class="nav-caption">Управление</span>
             <?php foreach ($managementNav as $name => [$glyph, $label]): ?>
-                <a href="<?= e(adminUrl($name)) ?>" <?= $active === $name ? 'aria-current="page"' : '' ?>>
+                <a href="<?= e($managementNav[$name][2] ?? adminUrl($name)) ?>" <?= $active === $name ? 'aria-current="page"' : '' ?>>
                     <?php icon($glyph); ?><span><?= e($label) ?></span>
                 </a>
             <?php endforeach; ?>
@@ -94,7 +100,8 @@ $nav = $managementNav + $developerNav;
                 'dashboard' => __DIR__ . '/dashboard.php',
                 'code' => __DIR__ . '/code.php',
                 'settings' => __DIR__ . '/settings.php',
-                'fields', 'field-group', 'pages', 'page' => __DIR__ . '/fields.php',
+                'fields', 'field-group', 'pages', 'page', 'records', 'record' => __DIR__ . '/fields.php',
+                'record-types', 'record-type' => __DIR__ . '/record-types.php',
             }; ?>
         </main>
     </div>

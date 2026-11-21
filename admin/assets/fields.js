@@ -154,7 +154,8 @@
             let visible = 0;
             for (const row of rows) {
                 const name = row.querySelector('[data-group-name]').textContent.toLocaleLowerCase();
-                row.hidden = !name.includes(query) || (filter.value !== '' && row.dataset.target !== filter.value && row.dataset.target !== '0');
+                const appliesToPage = filter.value.startsWith('page:') && filter.value !== 'page:0' && row.dataset.target === 'page:0';
+                row.hidden = !name.includes(query) || (filter.value !== '' && row.dataset.target !== filter.value && !appliesToPage);
                 if (!row.hidden) visible++;
             }
             table.hidden = visible === 0;

@@ -14,6 +14,7 @@ require_once __DIR__ . '/content.php';
 require_once __DIR__ . '/view.php';
 require_once __DIR__ . '/theme.php';
 require_once __DIR__ . '/fields.php';
+require_once __DIR__ . '/records.php';
 require_once __DIR__ . '/media.php';
 
 final class SetupException extends RuntimeException {}
@@ -105,6 +106,7 @@ function openSite(string $root): PDO
         }
         try {
             migrateFields($db);
+            migrateRecordTypes($db);
         } catch (PDOException $error) {
             error_log($error::class . ': ' . $error->getMessage());
             problem(500, 'Что-то пошло не так', 'Попробуйте обновить страницу чуть позже.', $root,

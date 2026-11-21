@@ -9,7 +9,10 @@
 <body>
 <main>
     <?php // Создайте текстовое поле test_title и заполните его в редакторе страницы. ?>
-    <h1><?php field('test_title', default: 'Тест полей'); ?></h1>
+    <h1><?php field('test_title', default: $record['title'] ?? 'Тест полей'); ?></h1>
+    <?php if ($record && $record['body'] !== ''): ?>
+        <p><?= nl2br(e($record['body'])) ?></p>
+    <?php endif; ?>
 </main>
 </body>
 </html>

@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 const FIELD_TYPES = ['text' => 'Текст', 'textarea' => 'Большой текст', 'image' => 'Изображение', 'url' => 'Ссылка', 'number' => 'Число', 'boolean' => 'Переключатель', 'repeater' => 'Повторитель'];
-const FIELD_SCOPES = ['options' => 'Весь сайт', 'page' => 'Страницы', 'article' => 'Статьи'];
+const FIELD_SCOPES = ['options' => 'Весь сайт', 'page' => 'Страницы', 'article' => 'Статьи', 'record' => 'Группы записей'];
 
 function migrateFields(PDO $db): void
 {
@@ -15,6 +15,8 @@ function migrateFields(PDO $db): void
         $db->exec("CREATE TABLE IF NOT EXISTS field_groups (id $id, title VARCHAR(120) NOT NULL, scope VARCHAR(12) NOT NULL, target_id INT NOT NULL DEFAULT 0, definition TEXT NOT NULL)" . $tail);
         $db->exec('CREATE TABLE IF NOT EXISTS field_values (group_id INT NOT NULL, context VARCHAR(60) NOT NULL, payload TEXT NOT NULL, PRIMARY KEY (group_id, context))' . $tail);
         writeTransaction($db, static function () use ($db): void {
+            $version = usesMysql($db) ? mysqlSchemaVersion($db) : (int) $db->query('PRAGMA user_version')->fetchColumn();
+            if ($version >= 2) return;
             if (!$db->query("SELECT id FROM pages WHERE slug = 'home'")->fetchColumn()) {
                 $db->prepare("INSERT INTO pages (title, slug, body, status, updated_at) VALUES (?, 'home', '', 'published', ?)")->execute(['Главная', time()]);
             }
@@ -28,7 +30,12 @@ function migrateFields(PDO $db): void
 
 function fieldGroups(PDO $db, ?string $scope = null, int $id = 0): array
 {
-    $query = $db->prepare('SELECT * FROM field_groups' . ($scope === null ? '' : ' WHERE scope = ? AND (target_id = 0 OR target_id = ?)') . ' ORDER BY id');
+    $where = match ($scope) {
+        null => '',
+        'record' => ' WHERE scope = ? AND target_id = ?',
+        default => ' WHERE scope = ? AND (target_id = 0 OR target_id = ?)',
+    };
+    $query = $db->prepare('SELECT * FROM field_groups' . $where . ' ORDER BY id');
     $query->execute($scope === null ? [] : [$scope, $id]);
     return array_map(static function ($group) {
         $group['fields'] = json_decode($group['definition'], true, 32, JSON_THROW_ON_ERROR);
@@ -68,6 +75,7 @@ function saveFieldGroup(PDO $db, int $id, array $data): void
     $title = textField(trim($data['title']), 120, 'Название группы', true);
     $scope = $data['scope']; $target = (int) $data['target_id'];
     if (!isset(FIELD_SCOPES[$scope]) || $target < 0 || ($scope === 'options' && $target !== 0)) throw new ValidationException('Выберите область полей.');
+    if ($scope === 'record' && !$target) throw new ValidationException('Выберите группу записей.');
     if ($target && !findFieldTarget($db, $scope, $target)) throw new ValidationException('Выбранная запись не найдена.');
     $fields = validateDefinitions(fieldJson($data['definition']));
     foreach (fieldGroups($db) as $other) {
@@ -86,7 +94,7 @@ function saveFieldGroup(PDO $db, int $id, array $data): void
 
 function findFieldTarget(PDO $db, string $scope, int $id): array|false
 {
-    $table = match ($scope) { 'page' => 'pages', 'article' => 'articles', default => throw new ValidationException('Некорректная область.') };
+    $table = match ($scope) { 'page' => 'pages', 'article' => 'articles', 'record' => 'record_types', default => throw new ValidationException('Некорректная область.') };
     $query = $db->prepare("SELECT * FROM $table WHERE id = ?"); $query->execute([$id]); return $query->fetch();
 }
 
@@ -164,8 +172,15 @@ function get_field(string $key, string|int|null $context = null, mixed $default 
     $context = $context === 'option' ? 'options' : $context;
     $db = $GLOBALS['db'];
     [$scope, $id] = array_pad(explode(':', $context, 2), 2, '0');
+    $target = (int) $id;
+    if ($scope === 'record') {
+        $query = $db->prepare('SELECT type_id FROM records WHERE id = ?');
+        $query->execute([$target]);
+        $target = (int) $query->fetchColumn();
+        if (!$target) return $default;
+    }
     $values = loadFieldValues($db, $context);
-    foreach (fieldGroups($db, $scope, (int) $id) as $group) {
+    foreach (fieldGroups($db, $scope, $target) as $group) {
         foreach ($group['fields'] as $field) {
             if ($field['key'] === $key) return $values[$group['id']][$key] ?? ($field['type'] === 'repeater' ? [] : $default);
         }
@@ -179,10 +194,10 @@ function field(string $key, string|int|null $context = null, mixed $default = ''
     if (is_scalar($value) || $value === null) echo e((string) $value);
 }
 
-function fieldValuesForm(PDO $db, string $scope, int $id): void
+function fieldValuesForm(PDO $db, string $scope, int $id, ?int $target = null): void
 {
     $context = $scope === 'options' ? 'options' : "$scope:$id";
     $values = $_SERVER['REQUEST_METHOD'] === 'POST' && is_string($_POST['field_values'] ?? null) ? post('field_values') : json_encode(loadFieldValues($db, $context), JSON_THROW_ON_ERROR);
-    echo '<div class="custom-fields" data-field-values data-groups="' . e(json_encode(fieldGroups($db, $scope, $id), JSON_THROW_ON_ERROR)) . '">';
+    echo '<div class="custom-fields" data-field-values data-groups="' . e(json_encode(fieldGroups($db, $scope, $target ?? $id), JSON_THROW_ON_ERROR)) . '">';
     echo '<input type="hidden" name="field_values" value="' . e($values) . '"><noscript>Для редактирования полей включите JavaScript.</noscript></div>';
 }
