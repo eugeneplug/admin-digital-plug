@@ -1,7 +1,9 @@
 'use strict';
 
+(() => {
 const codeForm = document.getElementById('theme-editor');
 const sourceField = document.getElementById('theme-source');
+if (!codeForm || !sourceField) return;
 const saveButton = document.querySelector('[form="theme-editor"]');
 const statusLabel = document.querySelector('[data-code-status]');
 const positionLabel = document.querySelector('[data-code-position]');
@@ -133,7 +135,7 @@ function setupContextMenu() {
         trigger.setAttribute('aria-expanded', 'false');
     }
 
-    window.addEventListener('contextmenu', event => {
+    function openContextMenu(event) {
         if (!codeForm.contains(event.target)) return;
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -141,7 +143,16 @@ function setupContextMenu() {
             editor.setCursor(editor.coordsChar({ left: event.clientX, top: event.clientY }));
         }
         showMenu(event.clientX, event.clientY);
+    }
+    // Intercept the press before CodeMirror can move its native textarea
+    // or change the selection to prepare the browser's context menu.
+    window.addEventListener('pointerdown', event => {
+        if (event.button === 2) openContextMenu(event);
     }, true);
+    window.addEventListener('mousedown', event => {
+        if (event.button === 2) openContextMenu(event);
+    }, true);
+    window.addEventListener('contextmenu', openContextMenu, true);
     surface.addEventListener('keydown', event => {
         if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
             event.preventDefault();
@@ -254,3 +265,4 @@ window.addEventListener('pageshow', event => {
         updateStatus(sourceField.value);
     }
 });
+})();

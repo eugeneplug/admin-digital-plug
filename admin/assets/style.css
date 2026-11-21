@@ -198,8 +198,9 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 .breadcrumbs span { color: #222e47; font-weight: 650; }
 .website-link { min-height: 36px; }
 .sidebar-close, .menu-toggle, .mobile-overlay { display: none; }
-.admin-content {
-    max-width: 1740px; padding: 26px 12px 40px; margin-inline: auto; animation: enter .3s ease both;
+#main.admin-content {
+    width: 100%; max-width: 1740px; min-width: 0;
+    padding: 26px 12px 40px; margin-inline: auto; animation: enter .3s ease both;
 }
 @media (min-width: 761px) {
     .sidebar { padding: 24px 6px 14px; gap: 26px; }
@@ -360,7 +361,7 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
     .menu-open .mobile-overlay { display: block; position: fixed; inset: 0; z-index: 5; width: 100%; border: 0; background: #081025aa; }
     .menu-open { overflow: hidden; }
     .topbar { min-height: 58px; }
-    .admin-content { padding-inline: 21px; }
+    #main.admin-content { padding-inline: 21px; }
     .welcome-art { width: 41%; }
 }
 
@@ -376,8 +377,8 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 }
 
 @media (max-width: 470px) {
-    .topbar, .admin-content { padding-inline: 14px; }
-    .admin-content { padding-top: 21px; }
+    .topbar, #main.admin-content { padding-inline: 14px; }
+    #main.admin-content { padding-top: 21px; }
     .breadcrumbs a, .breadcrumbs .icon { display: none; }
     .website-link { padding-inline: 9px; font-size: 13px; }
     .website-link .small-icon { display: none; }
