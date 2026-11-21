@@ -30,7 +30,8 @@ function migrateFields(PDO $db): void
             $db->exec(usesMysql($db) ? 'UPDATE plugy_installation SET version = 2 WHERE id = 1' : 'PRAGMA user_version = 2');
         });
     };
-    if (usesMysql($db)) withMysqlLock($db, 'fields-migration', $migrate);
+    // MySQL limits GET_LOCK names to 64 characters, including the database hash.
+    if (usesMysql($db)) withMysqlLock($db, 'fields', $migrate);
     else $migrate();
 }
 

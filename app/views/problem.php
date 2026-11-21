@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title><?= e($title) ?> · Plugy Engine</title>
-    <link rel="stylesheet" href="<?= e(assetUrl('style.css', $root)) ?>">
+    <link rel="stylesheet" href="<?= e(assetUrl('style.css', $root, versioned: true)) ?>">
 </head>
 <body class="problem-page">
     <main class="panel problem-card">
@@ -14,6 +14,9 @@
         <h1><?= e($title) ?></h1>
         <p><?= e($message) ?></p>
         <a class="button button-primary" href="<?= e($root) ?>">На главную</a>
+        <?php if ($reason !== ''): ?>
+            <p class="feedback feedback-error problem-reason"><?= e($reason) ?></p>
+        <?php endif; ?>
     </main>
 </body>
 </html>

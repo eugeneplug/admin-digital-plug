@@ -306,6 +306,7 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 .problem-card { display: grid; justify-items: start; gap: 15px; max-width: 510px; padding: 28px; }
 .problem-card h1 { font-size: 29px; letter-spacing: -.04em; }
 .problem-card p { color: var(--muted); line-height: 1.5; }
+.problem-card .problem-reason { width: 100%; color: #9d2640; overflow-wrap: anywhere; }
 .install-card { width: min(100%, 510px); }
 .install-card .feedback { width: 100%; margin-bottom: 0; color: #9d2640; }
 .install-card .install-step { color: var(--blue-dark); font-size: 13px; font-weight: 700; margin-bottom: -7px; }

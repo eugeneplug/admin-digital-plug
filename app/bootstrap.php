@@ -65,11 +65,35 @@ function redirect(string $location, int $status = 303): never
     exit;
 }
 
-function problem(int $status, string $title, string $message, string $root): never
+function problem(int $status, string $title, string $message, string $root, string $reason = ''): never
 {
     http_response_code($status);
     require __DIR__ . '/views/problem.php';
     exit;
+}
+
+function publicErrorReason(Throwable $error): string
+{
+    if ($error instanceof PDOException) {
+        $code = (int) ($error->errorInfo[1] ?? 0);
+        $reason = match ($code) {
+            1044, 1045, 1142, 1143 => 'Операция запрещена для пользователя базы данных.',
+            1049 => 'Указанная база данных не найдена.',
+            1054, 1146 => 'В базе не найдена нужная таблица или колонка.',
+            1062 => 'В базе уже есть запись с таким ключом.',
+            1205, 1213, 3058 => 'База занята другой операцией.',
+            2002, 2003, 2006, 2013 => 'Связь с сервером базы данных недоступна.',
+            3057 => 'Сервер БД отклонил имя блокировки.',
+            default => 'База данных не выполнила запрос.',
+        };
+        return $reason . ($code ? ' Код БД: ' . $code . '.' : '');
+    }
+    return match (true) {
+        $error instanceof ParseError => 'Ошибка синтаксиса PHP.',
+        $error instanceof TypeError => 'PHP получил значение неподходящего типа.',
+        $error instanceof JsonException => 'Не удалось прочитать данные в формате JSON.',
+        default => 'Внутренняя ошибка при выполнении PHP.',
+    };
 }
 
 function openSite(string $root): PDO
@@ -79,14 +103,20 @@ function openSite(string $root): PDO
         if ($db === null) {
             redirect($root . '?setup=1');
         }
-        migrateFields($db);
+        try {
+            migrateFields($db);
+        } catch (PDOException $error) {
+            error_log($error::class . ': ' . $error->getMessage());
+            problem(500, 'Что-то пошло не так', 'Попробуйте обновить страницу чуть позже.', $root,
+                'Не удалось обновить схему БД. ' . publicErrorReason($error));
+        }
         return $db;
     } catch (SetupException $error) {
-        problem(503, 'Сайт ещё не настроен', $error->getMessage(), $root);
+        problem(503, 'Сайт ещё не настроен', 'Проверьте настройки и обновите страницу.', $root, $error->getMessage());
     }
 }
 
 set_exception_handler(static function (Throwable $error): void {
     error_log($error::class . ': ' . $error->getMessage());
-    problem(500, 'Что-то пошло не так', 'Попробуйте обновить страницу чуть позже.', $GLOBALS['root'] ?? './');
+    problem(500, 'Что-то пошло не так', 'Попробуйте обновить страницу чуть позже.', $GLOBALS['root'] ?? './', publicErrorReason($error));
 });

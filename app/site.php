@@ -56,5 +56,5 @@ try {
 } catch (Throwable $error) {
     while (ob_get_level() > $level) ob_end_clean();
     error_log($error::class . ': ' . $error->getMessage());
-    problem(500, 'Ошибка шаблона', 'Проверьте PHP-шаблон сайта в редакторе кода админки.', $root);
+    problem(500, 'Ошибка шаблона', 'Проверьте PHP-шаблон сайта в редакторе кода админки.', $root, publicErrorReason($error));
 }
