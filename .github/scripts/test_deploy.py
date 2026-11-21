@@ -1,4 +1,6 @@
 import importlib.util
+import contextlib
+import io
 import os
 from pathlib import Path
 import subprocess
@@ -14,11 +16,14 @@ REAL_RUN = subprocess.run
 class DeploymentTests(unittest.TestCase):
     def setUp(self):
         self.environment = patch.dict(os.environ, {
-            "SFTP_HOST": "example.test", "SFTP_USERNAME": "tester", "SFTP_KEY": "fixture-key",
+            "SFTP_HOST": "example.test", "SFTP_USERNAME": "tester", "SFTP_PASSWORD": "fixture password '$!",
             "REMOTE_PATH": "/example/public_html", "SITE_URL": "https://example.test",
         })
         self.environment.start()
         self.addCleanup(self.environment.stop)
+        output = contextlib.redirect_stdout(io.StringIO())
+        output.__enter__()
+        self.addCleanup(output.__exit__, None, None, None)
         self.commands = []
         self.stage = None
         self.failure = None
@@ -27,9 +32,12 @@ class DeploymentTests(unittest.TestCase):
         self.commands.append(args[0])
         if args[0] == "git":
             return REAL_RUN(args, **kwargs)
-        if args[0] == "ssh-keygen":
-            return subprocess.CompletedProcess(args, 1 if self.failure == "key" else 0)
-        if args[0] == "sftp":
+        if args[0] == "sshpass":
+            self.assertEqual(args[1:3], ("-e", "sftp"))
+            self.assertEqual(kwargs["env"]["SSHPASS"], "fixture password '$!")
+            self.assertNotIn("fixture password '$!", " ".join(args))
+            self.assertIn("-oBatchMode=no", args)
+            self.assertNotIn("SFTP_PASSWORD", os.environ)
             self.stage = Path(args[args.index("-b") + 1]).parent
             batch = (self.stage / "upload.sftp").read_text()
             self.assertNotIn('put ".github/', batch)
@@ -39,6 +47,8 @@ class DeploymentTests(unittest.TestCase):
             self.assertIn('put "app/.htaccess"', batch)
             if self.failure == "sftp":
                 raise subprocess.CalledProcessError(255, args)
+            if self.failure == "password":
+                raise subprocess.CalledProcessError(5, args)
             for name in ("style.css", "code-editor.js"):
                 content = (self.stage / "files/admin/assets" / name).read_bytes()
                 (self.stage / name).write_bytes(content if self.failure != "readback" else b"wrong")
@@ -52,7 +62,7 @@ class DeploymentTests(unittest.TestCase):
         return subprocess.CompletedProcess(args, 0)
 
     def test_missing_and_placeholder_secrets_stop_before_network(self):
-        for name in ("SFTP_HOST", "SFTP_USERNAME", "SFTP_KEY"):
+        for name in ("SFTP_HOST", "SFTP_USERNAME", "SFTP_PASSWORD"):
             for value in ("", "1"):
                 with self.subTest(name=name, value=value), patch.dict(os.environ, {name: value}), \
                         patch.object(deploy.subprocess, "run") as command:
@@ -67,8 +77,8 @@ class DeploymentTests(unittest.TestCase):
         self.assertFalse(self.stage.exists())
 
     def test_failures_are_propagated(self):
-        for failure in ("key", "sftp", "readback", "http", "stale"):
-            with self.subTest(failure=failure), patch.dict(os.environ, {"SFTP_KEY": "fixture-key"}), \
+        for failure in ("password", "sftp", "readback", "http", "stale"):
+            with self.subTest(failure=failure), patch.dict(os.environ, {"SFTP_PASSWORD": "fixture password '$!"}), \
                     patch.object(deploy.subprocess, "run", side_effect=self.execute):
                 self.failure = failure
                 with self.assertRaises((ValueError, subprocess.CalledProcessError)):

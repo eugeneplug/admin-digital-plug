@@ -13,7 +13,7 @@ def run(*args, **kwargs):
 
 
 def deploy():
-    for name in ("SFTP_HOST", "SFTP_USERNAME", "SFTP_KEY"):
+    for name in ("SFTP_HOST", "SFTP_USERNAME", "SFTP_PASSWORD"):
         if os.environ.get(name, "").strip() in ("", "1"):
             raise ValueError(f"Secret {name} is missing or contains the test value 1. Restore the real connection details.")
     host = os.environ["SFTP_HOST"]
@@ -31,13 +31,7 @@ def deploy():
 
     with tempfile.TemporaryDirectory(prefix="plugy-deploy-") as temporary:
         stage = Path(temporary)
-        key = stage / "key"
-        key.write_text(os.environ.pop("SFTP_KEY").replace("\r", "").strip() + "\n", encoding="utf-8")
-        key.chmod(0o600)
-        result = subprocess.run(["ssh-keygen", "-y", "-P", "", "-f", str(key)],
-                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        if result.returncode:
-            raise ValueError("SFTP_KEY must be a valid private SSH key without a passphrase.")
+        password = os.environ.pop("SFTP_PASSWORD")
 
         # Only tracked application files; never upload CI files, archives or local data.
         tracked = run("git", "ls-tree", "-rz", "--name-only", "HEAD", "--",
@@ -65,11 +59,14 @@ def deploy():
         batch = stage / "upload.sftp"
         batch.write_text("\n".join(commands) + "\n", encoding="utf-8")
         print(f"Uploading {len(files)} application files. Existing configuration and data are preserved.", flush=True)
-        run("sftp", "-b", str(batch), "-P", "22", "-i", str(key),
-            "-oBatchMode=yes", "-oIdentitiesOnly=yes", "-oConnectTimeout=20",
+        # Keep the password out of arguments, batch files and unrelated subprocesses.
+        transfer_env = dict(os.environ, SSHPASS=password)
+        run("sshpass", "-e", "sftp", "-oBatchMode=no", "-b", str(batch), "-P", "22",
+            "-oPubkeyAuthentication=no", "-oPreferredAuthentications=password,keyboard-interactive",
+            "-oNumberOfPasswordPrompts=1", "-oConnectTimeout=20",
             "-oServerAliveInterval=15", "-oServerAliveCountMax=3",
             "-oStrictHostKeyChecking=accept-new", f"-oUserKnownHostsFile={stage / 'known_hosts'}",
-            f"{user}@{host}")
+            f"{user}@{host}", env=transfer_env)
 
         for name in assets:
             expected = (stage / "files" / "admin" / "assets" / name).read_bytes()
