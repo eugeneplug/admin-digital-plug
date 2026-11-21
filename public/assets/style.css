@@ -138,7 +138,7 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
     position: relative; overflow: hidden; isolation: isolate; display: grid; place-items: center; border-left: 1px solid #33476a;
     background: radial-gradient(ellipse at 55% 53%, #254f9c, #142d59 47%, #10203d 76%);
 }
-.login-visual::before, .welcome-art::before, .site-hero-art::before {
+.login-visual::before, .welcome-art::before {
     content: ""; position: absolute; z-index: -1; inset: 0;
     background-image: linear-gradient(#acccff12 1px, transparent 1px), linear-gradient(90deg, #acccff12 1px, transparent 1px);
     background-size: 27px 27px; mask-image: radial-gradient(ellipse, #000 30%, transparent 83%);

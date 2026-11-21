@@ -13,7 +13,7 @@
         <input type="hidden" name="action" value="save-code">
         <input type="hidden" name="revision" value="<?= e($themeRevision) ?>">
         <div class="code-toolbar">
-            <label for="theme-source"><?php icon('code'); ?> <span><small>app/theme/</small><?= e($themeFile) ?></span></label>
+            <label for="theme-source"><?php icon('code'); ?> <span><small>site/</small><?= e($themeFile) ?></span></label>
             <button class="code-tool" type="button" data-code-search hidden><?php icon('search'); ?> Найти</button>
         </div>
         <textarea id="theme-source" name="source" data-mode="<?= e(THEME_FILES[$themeFile][2]) ?>" spellcheck="false" autocapitalize="off">

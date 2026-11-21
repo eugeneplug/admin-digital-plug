@@ -7,6 +7,7 @@ const THEME_FILES = [
     'article.html' => ['HTML', 'Страница статьи', 'htmlmixed'],
     'article-card.html' => ['HTML', 'Карточка в журнале', 'htmlmixed'],
     'index.html' => ['HTML', 'Шапка и подвал', 'htmlmixed'],
+    'base.css' => ['CSS', 'Базовые стили и шрифт', 'css'],
     'styles.css' => ['CSS', 'Стили сайта', 'css'],
     'script.js' => ['JS', 'Скрипты сайта', 'javascript'],
 ];
@@ -26,7 +27,7 @@ function readThemeFile(string $file): string
     if (is_link($directory) || is_link($path)) {
         throw new RuntimeException('Invalid theme file location.');
     }
-    $source = @file_get_contents(is_file($path) ? $path : __DIR__ . '/theme/' . $file);
+    $source = @file_get_contents(is_file($path) ? $path : dirname(__DIR__) . '/site/' . $file);
     if ($source === false) {
         throw new RuntimeException('Unable to read theme file.');
     }
