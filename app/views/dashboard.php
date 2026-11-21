@@ -1,4 +1,6 @@
 <?php
+require dirname(__DIR__) . '/guard.php';
+
 $published = count(array_filter($articles, static fn(array $item): bool => $item['status'] === 'published'));
 $stats = [
     ['layers', 'Блоки сайта', count($blocks), 'На главной странице', 'blocks', 'blue'],
@@ -18,7 +20,7 @@ $stats = [
     </div>
     <div class="welcome-art" aria-hidden="true">
         <span class="art-orbit"></span><span class="art-tile art-tile-bottom"></span><span class="art-tile art-tile-middle"></span>
-        <span class="art-tile art-tile-top"><?php icon('plugy'); ?></span>
+        <span class="art-tile art-tile-top"></span>
         <span class="art-spark"></span><span class="art-spark art-spark-two"></span>
     </div>
 </section>

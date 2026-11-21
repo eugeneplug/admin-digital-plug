@@ -1,13 +1,10 @@
 <?php
 declare(strict_types=1);
 
+define('PLUGY_ENTRY', true);
 $root = '../';
 require dirname(__DIR__, 2) . '/app/bootstrap.php';
 securityHeaders(admin: true);
-
-if (!isHttps() && !isLocalDevelopment()) {
-    problem(403, 'Нужно безопасное соединение', 'Откройте панель управления по HTTPS.', $root);
-}
 
 $path = explode('?', $_SERVER['REQUEST_URI'], 2)[0];
 if (str_ends_with($path, '/admin')) {
@@ -21,7 +18,11 @@ if (($_SERVER['PATH_INFO'] ?? '') !== '') {
 }
 
 $db = openSite($root);
-startAdminSession();
+try {
+    startAdminSession();
+} catch (SetupException $error) {
+    problem(503, 'Сессии ещё не настроены', $error->getMessage(), $root);
+}
 $account = adminAccount($db);
 $signedIn = isAuthenticated($account);
 $method = $_SERVER['REQUEST_METHOD'];
@@ -37,6 +38,8 @@ if (!$signedIn) {
     if (!$login) {
         redirect(adminUrl('login'));
     }
+    $installed = isset($_SESSION['installation_complete']);
+    unset($_SESSION['installation_complete']);
     $demoBlocked = (bool) $account['demo'] && !isLocalDevelopment();
     if ($method === 'POST') {
         $username = substr(trim(post('username')), 0, 100);
@@ -65,10 +68,20 @@ $pages = [
     'block' => 'Редактор блока',
     'articles' => 'Статьи',
     'article' => 'Редактор статьи',
+    'code' => 'Редактор кода',
     'settings' => 'Настройки',
 ];
 if (!isset($pages[$view])) {
     problem(404, 'Страница не найдена', 'Вернитесь на главную страницу.', $root);
+}
+
+if ($view === 'code') {
+    $themeFile = query('file') ?: 'home.html';
+    if (!isset(THEME_FILES[$themeFile])) {
+        problem(404, 'Файл не найден', 'Выберите файл из списка в редакторе кода.', $root);
+    }
+    $themeSource = readThemeFile($themeFile);
+    $themeRevision = hash('sha256', $themeSource);
 }
 
 $id = filter_var(query('id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
@@ -95,6 +108,13 @@ if ($editing) {
 if ($method === 'POST') {
     $action = post('action');
     try {
+        if ($view === 'code' && $action === 'save-code' && is_string($_POST['source'] ?? null)) {
+            $themeSource = post('source');
+            $themeRevision = post('revision');
+            saveThemeFile($themeFile, $themeSource, $themeRevision);
+            $_SESSION['notice'] = 'Файл «' . $themeFile . '» сохранён. Изменения опубликованы.';
+            redirect(themeEditorUrl($themeFile));
+        }
         if ($action === 'logout' && $view === 'dashboard') {
             endAdminSession();
             redirect(adminUrl('login'));
@@ -124,7 +144,7 @@ if ($method === 'POST') {
             redirect(adminUrl('blocks'));
         }
         problem(400, 'Действие недоступно', 'Вернитесь назад и обновите страницу.', $root);
-    } catch (ValidationException $validation) {
+    } catch (ValidationException | SetupException $validation) {
         http_response_code(422);
         $error = $validation->getMessage();
     }

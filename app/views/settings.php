@@ -1,3 +1,4 @@
+<?php require dirname(__DIR__) . '/guard.php'; ?>
 <div class="page-heading">
     <div><h1>Настройки</h1><p>Управляйте доступом к панели Plugy Engine.</p></div>
 </div>

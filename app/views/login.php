@@ -1,3 +1,4 @@
+<?php require dirname(__DIR__) . '/guard.php'; ?>
 <!doctype html>
 <html lang="ru">
 <head>
@@ -5,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>Вход · Plugy Engine</title>
-    <link rel="stylesheet" href="../assets/style.css">
-    <script src="../assets/app.js" defer></script>
+    <link rel="stylesheet" href="<?= e(assetUrl('style.css', $root)) ?>">
+    <script src="<?= e(assetUrl('app.js', $root)) ?>" defer></script>
 </head>
 <body class="login-page">
     <main class="login-shell">
@@ -15,6 +16,9 @@
             <div class="login-content">
                 <h1>Вход в админку</h1>
                 <p class="login-description">Войдите, чтобы управлять контентом сайта.</p>
+                <?php if ($installed): ?>
+                    <p class="feedback feedback-success" role="status"><?php icon('check'); ?> Plugy Engine установлен. Войдите с паролем, который вы задали.</p>
+                <?php endif; ?>
                 <?php if ($demoBlocked): ?>
                     <p class="feedback feedback-error" role="alert">Смените пароль локальной учётной записи в настройках перед переносом сайта на сервер.</p>
                 <?php else: ?>
@@ -52,7 +56,6 @@
         <div class="login-visual" aria-hidden="true">
             <div class="visual-frame"></div>
             <div class="login-rings"><i></i><i></i><i></i><i></i></div>
-            <div class="visual-chip"><?php icon('plugy'); ?></div>
             <span class="visual-point point-one"></span>
             <span class="visual-point point-two"></span>
             <span class="visual-point point-three"></span>

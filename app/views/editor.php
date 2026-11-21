@@ -1,4 +1,6 @@
 <?php
+require dirname(__DIR__) . '/guard.php';
+
 $forBlock = $view === 'block';
 $listUrl = adminUrl($forBlock ? 'blocks' : 'articles');
 $formUrl = adminUrl($view, $id);

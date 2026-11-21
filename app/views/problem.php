@@ -1,3 +1,4 @@
+<?php require dirname(__DIR__) . '/guard.php'; ?>
 <!doctype html>
 <html lang="ru">
 <head>
@@ -5,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title><?= e($title) ?> · Plugy Engine</title>
-    <link rel="stylesheet" href="<?= e($root) ?>assets/style.css">
+    <link rel="stylesheet" href="<?= e(assetUrl('style.css', $root)) ?>">
 </head>
 <body class="problem-page">
     <main class="panel problem-card">

@@ -1,8 +1,11 @@
 <?php
+require dirname(__DIR__) . '/guard.php';
+
 $nav = [
     'dashboard' => ['grid', 'Обзор'],
     'blocks' => ['layers', 'Блоки сайта'],
     'articles' => ['file', 'Статьи'],
+    'code' => ['code', 'Редактор кода'],
     'settings' => ['settings', 'Настройки'],
 ];
 ?>
@@ -13,8 +16,14 @@ $nav = [
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title><?= e($title) ?> · Plugy Engine</title>
-    <link rel="stylesheet" href="../assets/style.css">
-    <script src="../assets/app.js" defer></script>
+    <link rel="stylesheet" href="<?= e(assetUrl('style.css', $root)) ?>">
+    <script src="<?= e(assetUrl('app.js', $root)) ?>" defer></script>
+    <?php if ($view === 'code'): ?>
+        <link rel="stylesheet" href="<?= e(assetUrl('codemirror/codemirror.css', $root)) ?>">
+        <link rel="stylesheet" href="<?= e(assetUrl('code-editor.css', $root)) ?>">
+        <script src="<?= e(assetUrl('codemirror/codemirror.js', $root)) ?>" defer></script>
+        <script src="<?= e(assetUrl('code-editor.js', $root)) ?>" defer></script>
+    <?php endif; ?>
 </head>
 <body class="admin-page">
     <aside id="sidebar" class="sidebar">
@@ -63,6 +72,7 @@ $nav = [
                 'dashboard' => __DIR__ . '/dashboard.php',
                 'blocks', 'articles' => __DIR__ . '/listing.php',
                 'block', 'article' => __DIR__ . '/editor.php',
+                'code' => __DIR__ . '/code.php',
                 'settings' => __DIR__ . '/settings.php',
             }; ?>
         </main>

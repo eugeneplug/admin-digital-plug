@@ -1,14 +1,18 @@
 <?php
 declare(strict_types=1);
 
+require __DIR__ . '/guard.php';
+
 date_default_timezone_set('UTC');
 ini_set('display_errors', '0');
 umask(0077);
 
 require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/mysql.php';
 require_once __DIR__ . '/security.php';
 require_once __DIR__ . '/content.php';
 require_once __DIR__ . '/view.php';
+require_once __DIR__ . '/theme.php';
 
 final class SetupException extends RuntimeException {}
 final class ValidationException extends RuntimeException {}
@@ -33,14 +37,11 @@ function securityHeaders(bool $admin = false): void
 {
     header_remove('X-Powered-By');
     header('Content-Type: text/html; charset=UTF-8');
-    header("Content-Security-Policy: default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
+    header("Content-Security-Policy: default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: DENY');
     header('Referrer-Policy: same-origin');
     header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
-    if (isHttps()) {
-        header('Strict-Transport-Security: max-age=31536000');
-    }
     if ($admin) {
         header('Cache-Control: no-store');
     }
@@ -72,7 +73,11 @@ function problem(int $status, string $title, string $message, string $root): nev
 function openSite(string $root): PDO
 {
     try {
-        return openDatabase();
+        $db = siteDatabase();
+        if ($db === null) {
+            redirect($root . '?setup=1');
+        }
+        return $db;
     } catch (SetupException $error) {
         problem(503, 'Сайт ещё не настроен', $error->getMessage(), $root);
     }

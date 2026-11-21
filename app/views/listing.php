@@ -1,4 +1,6 @@
 <?php
+require dirname(__DIR__) . '/guard.php';
+
 $forBlocks = $view === 'blocks';
 $items = $forBlocks ? $blocks : $articles;
 $type = $forBlocks ? 'block' : 'article';

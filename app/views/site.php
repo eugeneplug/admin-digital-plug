@@ -1,81 +1,68 @@
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= $article ? e($article['title']) . ' · ' : '' ?>Студия Пиксель</title>
-    <link rel="stylesheet" href="assets/style.css">
-</head>
-<body class="site-page">
-    <header class="site-header">
-        <div class="site-container site-nav">
-            <a class="site-brand" href="./"><span class="pixel-mark" aria-hidden="true"></span>пиксель<span>.</span></a>
-            <nav aria-label="Навигация сайта">
-                <a href="./#journal">Журнал</a>
-                <a class="site-admin-link" href="admin/"><?php icon('lock'); ?> Админка</a>
-            </nav>
-        </div>
-    </header>
-    <main class="site-container">
-        <?php if ($article): ?>
-            <article class="site-article">
-                <a class="text-link back-link" href="./#journal"><?php icon('chevron'); ?> К журналу</a>
-                <p class="site-eyebrow"><time datetime="<?= e(date('Y-m-d', (int) $article['published_at'])) ?>"><?= e(dateLabel((int) $article['published_at'])) ?></time></p>
-                <h1><?= e($article['title']) ?></h1>
-                <?php if ($article['excerpt'] !== ''): ?><p class="article-lead"><?= e($article['excerpt']) ?></p><?php endif; ?>
-                <div class="article-body"><?= e($article['body']) ?></div>
-            </article>
-        <?php else: ?>
-            <?php $firstHero = true; ?>
-            <?php foreach ($blocks as $block): ?>
-                <section class="site-block site-block-<?= e($block['kind']) ?>">
-                    <div class="site-block-content">
-                        <?php if ($block['eyebrow'] !== ''): ?><p class="site-eyebrow"><?= e($block['eyebrow']) ?></p><?php endif; ?>
-                        <?php if ($block['kind'] === 'hero' && $firstHero): ?>
-                            <h1><?= e($block['title']) ?></h1>
-                            <?php $firstHero = false; ?>
-                        <?php else: ?>
-                            <h2><?= e($block['title']) ?></h2>
-                        <?php endif; ?>
-                        <?php if ($block['body'] !== ''): ?><p class="block-text"><?= e($block['body']) ?></p><?php endif; ?>
-                        <?php if ($block['link_label'] !== '' && goodLink($block['link_url'])): ?>
-                            <a class="button <?= $block['kind'] === 'callout' ? 'button-on-dark' : 'button-primary' ?>" href="<?= e($block['link_url']) ?>"><?= e($block['link_label']) ?></a>
-                        <?php endif; ?>
-                    </div>
-                    <?php if ($block['kind'] === 'hero'): ?>
-                        <div class="site-hero-art" aria-hidden="true"><i></i><i></i><i></i><b class="pixel-mark"></b></div>
-                    <?php endif; ?>
-                </section>
-            <?php endforeach; ?>
-            <section class="journal" id="journal">
-                <div class="journal-heading">
-                    <?php if ($firstHero): ?><h1>Журнал</h1><?php else: ?><h2>Журнал</h2><?php endif; ?>
-                    <p>Заметки о дизайне и работе над сайтами.</p>
-                </div>
-                <?php if (!$articles): ?>
-                    <p class="empty-compact">Здесь появятся опубликованные статьи.</p>
-                <?php else: ?>
-                    <div class="journal-grid">
-                        <?php foreach ($articles as $index => $item): ?>
-                            <article class="journal-card">
-                                <a href="<?= e(articleUrl($item['slug'])) ?>">
-                                    <span class="journal-art journal-art-<?= $index % 3 ?>" aria-hidden="true"><i></i><i></i><i></i></span>
-                                    <div class="journal-copy">
-                                        <time datetime="<?= e(date('Y-m-d', (int) $item['published_at'])) ?>"><?= e(dateLabel((int) $item['published_at'])) ?></time>
-                                        <h3><?= e($item['title']) ?></h3>
-                                        <?php if ($item['excerpt'] !== ''): ?><span><?= e($item['excerpt']) ?></span><?php endif; ?>
-                                    </div>
-                                </a>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </section>
-        <?php endif; ?>
-    </main>
-    <footer class="site-container site-footer">
-        <a class="site-brand" href="./"><span class="pixel-mark" aria-hidden="true"></span>пиксель<span>.</span></a>
-        <span>Демо-сайт на Plugy Engine</span>
-    </footer>
-</body>
-</html>
+<?php
+declare(strict_types=1);
+
+require dirname(__DIR__) . '/guard.php';
+
+if ($article) {
+    ob_start();
+    icon('chevron');
+    $backIcon = ob_get_clean();
+    $published = (int) $article['published_at'];
+
+    echo strtr(readThemeFile('article.html'), [
+        '{{back_icon}}' => $backIcon,
+        '{{date_iso}}' => e(date('Y-m-d', $published)),
+        '{{date}}' => e(dateLabel($published)),
+        '{{title}}' => e($article['title']),
+        '{{excerpt}}' => e($article['excerpt']),
+        '{{hide_excerpt}}' => $article['excerpt'] === '' ? ' hidden' : '',
+        '{{body}}' => e($article['body']),
+    ]);
+    return;
+}
+
+$hasPageHeading = false;
+$blockMarkup = [];
+$blockTemplate = readThemeFile('block.html');
+foreach ($blocks as $block) {
+    $hero = $block['kind'] === 'hero';
+    $heading = $hero && !$hasPageHeading ? 'h1' : 'h2';
+    $hasPageHeading = $hasPageHeading || $hero;
+    $showLink = $block['link_label'] !== '' && goodLink($block['link_url']);
+    $blockMarkup[] = strtr($blockTemplate, [
+        '{{kind}}' => e($block['kind']),
+        '{{heading}}' => '<' . $heading . '>' . e($block['title']) . '</' . $heading . '>',
+        '{{eyebrow}}' => e($block['eyebrow']),
+        '{{hide_eyebrow}}' => $block['eyebrow'] === '' ? ' hidden' : '',
+        '{{text}}' => e($block['body']),
+        '{{hide_text}}' => $block['body'] === '' ? ' hidden' : '',
+        '{{button_style}}' => $block['kind'] === 'callout' ? 'button-on-dark' : 'button-primary',
+        '{{button_url}}' => $showLink ? e($block['link_url']) : '',
+        '{{button_text}}' => e($block['link_label']),
+        '{{hide_button}}' => $showLink ? '' : ' hidden',
+        '{{hide_art}}' => $hero ? '' : ' hidden',
+    ]);
+}
+
+$cardMarkup = [];
+$cardTemplate = readThemeFile('article-card.html');
+foreach ($articles as $index => $item) {
+    $published = (int) $item['published_at'];
+    $cardMarkup[] = strtr($cardTemplate, [
+        '{{url}}' => e(articleUrl($item['slug'])),
+        '{{art_variant}}' => (string) ($index % 3),
+        '{{date_iso}}' => e(date('Y-m-d', $published)),
+        '{{date}}' => e(dateLabel($published)),
+        '{{title}}' => e($item['title']),
+        '{{excerpt}}' => e($item['excerpt']),
+        '{{hide_excerpt}}' => $item['excerpt'] === '' ? ' hidden' : '',
+    ]);
+}
+
+echo strtr(readThemeFile('home.html'), [
+    '{{blocks}}' => implode("\n", $blockMarkup),
+    '{{journal_heading}}' => $hasPageHeading ? '<h2>Журнал</h2>' : '<h1>Журнал</h1>',
+    '{{cards}}' => implode("\n", $cardMarkup),
+    '{{hide_empty}}' => $articles ? ' hidden' : '',
+    '{{hide_cards}}' => $articles ? '' : ' hidden',
+]);

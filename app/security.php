@@ -21,9 +21,10 @@ function validNewPassword(string $password): bool
 
 function startAdminSession(): void
 {
-    $path = dataDirectory() . '/sessions';
+    $secure = isHttps();
+    $path = dataDirectory() . ($secure ? '/sessions' : '/sessions-http');
     ensurePrivateDirectory($path);
-    session_name(isHttps() ? '__Host-PlugySession' : 'PlugyLocalSession');
+    session_name($secure ? '__Host-PlugySession' : 'PlugyHttpSession');
     if (!session_start([
         'save_handler' => 'files',
         'save_path' => $path,
@@ -34,7 +35,7 @@ function startAdminSession(): void
         'cookie_lifetime' => 0,
         'cookie_path' => '/',
         'cookie_domain' => '',
-        'cookie_secure' => isHttps(),
+        'cookie_secure' => $secure,
         'cookie_httponly' => true,
         'cookie_samesite' => 'Strict',
         'cache_limiter' => '',
@@ -128,8 +129,9 @@ function reserveLoginAttempt(PDO $db, array $scopes): int
         if ($retryAfter > 0) {
             return $retryAfter;
         }
-        $increment = $db->prepare('INSERT INTO login_limits (scope, attempts, expires) VALUES (?, 1, ?)
-            ON CONFLICT (scope) DO UPDATE SET attempts = attempts + 1');
+        $upsert = usesMysql($db) ? 'ON DUPLICATE KEY UPDATE attempts = attempts + 1'
+            : 'ON CONFLICT (scope) DO UPDATE SET attempts = attempts + 1';
+        $increment = $db->prepare('INSERT INTO login_limits (scope, attempts, expires) VALUES (?, 1, ?) ' . $upsert);
         foreach (array_keys($scopes) as $scope) {
             $increment->execute([$scope, $now + 900]);
         }

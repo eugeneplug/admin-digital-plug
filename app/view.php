@@ -16,6 +16,11 @@ function articleUrl(string $slug, string $root = './'): string
     return $root . '?article=' . rawurlencode($slug);
 }
 
+function assetUrl(string $name, string $root): string
+{
+    return $root . (defined('PLUGY_ASSET_PREFIX') ? PLUGY_ASSET_PREFIX : '') . 'assets/' . $name;
+}
+
 function dateLabel(int $timestamp): string
 {
     $months = ['янв', 'фев', 'мар', 'апр', 'мая', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
@@ -35,7 +40,6 @@ function statusBadge(bool $active, string $positive, string $negative): void
 function icon(string $name, string $class = ''): void
 {
     $shapes = [
-        'plugy' => '<path d="M8 8h8a3 3 0 0 1 0 6h-5m5 2H8a3 3 0 0 1 0-6h5m-3 3 4-2"/>',
         'grid' => '<rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="14" y="3.5" width="6.5" height="6.5" rx="1"/><rect x="3.5" y="14" width="6.5" height="6.5" rx="1"/><rect x="14" y="14" width="6.5" height="6.5" rx="1"/>',
         'layers' => '<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5M3 16l9 5 9-5"/>',
         'file' => '<path d="M7 3.5h7l4.5 4.5v11A1.5 1.5 0 0 1 17 20.5H7A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5Zm7 0V9h4.5M9 13h6m-6 3.5h6"/>',
@@ -44,6 +48,8 @@ function icon(string $name, string $class = ''): void
         'logout' => '<path d="M10 5H6a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h4m3-3 4-4-4-4m-4 4h11"/>',
         'plus' => '<path d="M12 5v14M5 12h14"/>',
         'check' => '<path d="m5 12 4 4L19 6"/>',
+        'code' => '<path d="m8 6-5 6 5 6m8-12 5 6-5 6m-3-14-2 16"/>',
+        'search' => '<circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4.5 4.5"/>',
         'eye' => '<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/>',
         'eye-off' => '<path d="m4 4 16 16M10 6.2a10 10 0 0 1 2-.2c6 0 9.5 6 9.5 6s-1.1 1.9-3.1 3.5M6.2 7.8A16 16 0 0 0 2.5 12s3.5 6 9.5 6a10 10 0 0 0 3.8-.8"/>',
         'lock' => '<rect x="5.5" y="10" width="13" height="10" rx="2"/><path d="M8 10V7a4 4 0 1 1 8 0v3m-4 4v2"/>',
@@ -65,7 +71,5 @@ function icon(string $name, string $class = ''): void
 
 function brand(): void
 {
-    echo '<span class="brand-mark">';
-    icon('plugy');
-    echo '</span><span class="brand-name">Plugy <span>Engine</span></span>';
+    echo '<span class="brand-name" role="img" aria-label="Plugy Engine">Plugy<span>Engine</span></span>';
 }

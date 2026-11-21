@@ -95,13 +95,16 @@ function saveBlock(PDO $db, int $id, array $data): void
         $save = $db->prepare('UPDATE blocks SET kind = ?, eyebrow = ?, title = ?, body = ?, link_label = ?,
             link_url = ?, visible = ?, updated_at = ? WHERE id = ?');
         $save->execute([...$values, $id]);
-        if ($save->rowCount() !== 1) {
+        if ($save->rowCount() !== 1 && !findContent($db, 'block', $id)) {
             throw new ValidationException('Этот блок уже удалён.');
         }
         return;
     }
-    $db->prepare('INSERT INTO blocks (kind, eyebrow, title, body, link_label, link_url, visible, updated_at, position)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(position), 0) + 1 FROM blocks))')->execute($values);
+    writeTransaction($db, static function () use ($db, $values): void {
+        $position = (int) $db->query('SELECT COALESCE(MAX(position), 0) + 1 FROM blocks')->fetchColumn();
+        $db->prepare('INSERT INTO blocks (kind, eyebrow, title, body, link_label, link_url, visible, updated_at, position)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute([...$values, $position]);
+    });
 }
 
 function makeSlug(string $title): string
@@ -138,7 +141,7 @@ function saveArticle(PDO $db, int $id, array $data): void
                 published_at = CASE WHEN ? IS NULL THEN NULL ELSE COALESCE(published_at, ?) END,
                 updated_at = ? WHERE id = ?');
             $save->execute([$title, $slug, $excerpt, $body, $status, $publishedAt, $publishedAt, $now, $id]);
-            if ($save->rowCount() !== 1) {
+            if ($save->rowCount() !== 1 && !findContent($db, 'article', $id)) {
                 throw new ValidationException('Эта статья уже удалена.');
             }
             return;
@@ -146,7 +149,8 @@ function saveArticle(PDO $db, int $id, array $data): void
         $db->prepare('INSERT INTO articles (title, slug, excerpt, body, status, published_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)')->execute([$title, $slug, $excerpt, $body, $status, $publishedAt, $now]);
     } catch (PDOException $error) {
-        if (str_contains($error->getMessage(), 'UNIQUE constraint failed: articles.slug')) {
+        if ((int) ($error->errorInfo[1] ?? 0) === 1062
+            || str_contains($error->getMessage(), 'UNIQUE constraint failed: articles.slug')) {
             throw new ValidationException('Этот адрес уже занят. Укажите другой адрес статьи.');
         }
         throw $error;
@@ -163,7 +167,7 @@ function moveBlock(PDO $db, int $id, int $direction): void
 {
     writeTransaction($db, static function () use ($db, $id, $direction): void {
         $blocks = siteBlocks($db);
-        $index = array_search($id, array_column($blocks, 'id'), true);
+        $index = array_search($id, array_map('intval', array_column($blocks, 'id')), true);
         if ($index === false || !isset($blocks[$index + $direction])) {
             return;
         }
