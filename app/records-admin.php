@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . '/guard.php';
 
-$active = 'record-types';
+$active = 'fields';
 $id = filter_var(query('id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
 $editing = $view === 'record-type';
 $title = $editing ? ($id ? 'Редактировать группу записей' : 'Новая группа записей') : 'Группы записей';

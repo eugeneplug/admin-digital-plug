@@ -5,6 +5,21 @@
 .field-list-row span, .field-list-row small, .field-help { color: var(--muted); }
 .field-help { margin: 16px 0; line-height: 1.7; }
 .field-help code { color: var(--blue); }
+.custom-fields-nav {
+    display: flex; flex-wrap: wrap; gap: 4px; width: fit-content; padding: 4px; margin-bottom: 21px;
+    background: #eaf0fa; border: 1px solid #dbe4f2; border-radius: 11px;
+}
+.custom-fields-nav a {
+    display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 6px 11px;
+    border: 1px solid transparent; border-radius: 7px;
+    color: #455774; font-size: 13px; font-weight: 650;
+    transition: color .18s, background-color .18s, border-color .18s, box-shadow .18s;
+}
+.custom-fields-nav .icon { width: 16px; height: 16px; }
+.custom-fields-nav a:hover { color: var(--blue-dark); background: #f5f8ff; }
+.custom-fields-nav a[aria-current] {
+    color: var(--blue-dark); background: var(--paper); border-color: #cfddf4; box-shadow: 0 1px 3px #243f6d14;
+}
 .field-repeat-list, .field-value-group { display: grid; gap: 18px; }
 .field-repeat-row { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--canvas); animation: enter .2s ease both; }
 .field-row-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }

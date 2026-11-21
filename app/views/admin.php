@@ -11,7 +11,6 @@ foreach ($sidebarRecordTypes as $sidebarType) {
     $managementNav['records-' . $sidebarTypeId] = ['file', $sidebarType['title'], recordAdminUrl('records', $sidebarTypeId)];
 }
 $developerNav = [
-    'record-types' => ['grid', 'Группы записей'],
     'fields' => ['layers', 'Custom Fields'],
     'code' => ['code', 'Редактор кода'],
     'settings' => ['settings', 'Настройки'],
@@ -95,6 +94,17 @@ $nav = $managementNav + $developerNav;
             <?php endif; ?>
             <?php if ($error !== ''): ?>
                 <div class="feedback feedback-error" role="alert"><?= e($error) ?></div>
+            <?php endif; ?>
+            <?php if ($active === 'fields'): ?>
+                <?php $activeSection = in_array($view, ['record-types', 'record-type'], true) ? 'record-types' : 'fields'; ?>
+                <nav class="custom-fields-nav" aria-label="Разделы Custom Fields">
+                    <a href="<?= e(adminUrl('fields')) ?>" <?= $activeSection === 'fields' ? 'aria-current="location"' : '' ?>>
+                        <?php icon('layers'); ?> Группы полей
+                    </a>
+                    <a href="<?= e(adminUrl('record-types')) ?>" <?= $activeSection === 'record-types' ? 'aria-current="location"' : '' ?>>
+                        <?php icon('file'); ?> Группы записей
+                    </a>
+                </nav>
             <?php endif; ?>
             <?php require match ($view) {
                 'dashboard' => __DIR__ . '/dashboard.php',
