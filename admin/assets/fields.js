@@ -369,7 +369,7 @@
             const section = el('section', '', 'field-value-group'); section.append(el('h2', group.title));
             collectors[group.id] = values(section, group.fields, initial[group.id] ?? {}); host.append(section);
         }
-        if (!groups.length) host.append(el('p', 'Поля пока не созданы. Добавьте группу в разделе «Поля».', 'field-help'));
+        if (!groups.length) host.append(el('p', 'Поля пока не созданы. Добавьте группу в разделе «Custom Fields».', 'field-help'));
         host.closest('form').addEventListener('submit', () => {
             hidden.value = JSON.stringify(Object.fromEntries(Object.entries(collectors).map(([id, read]) => [id, read()])));
         });

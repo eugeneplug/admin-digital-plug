@@ -2,7 +2,7 @@
 require __DIR__ . '/guard.php';
 $id = filter_var(query('id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
 $active = match ($view) { 'field-group' => 'fields', 'page' => 'pages', default => $view };
-$title = ['fields' => 'Поля', 'field-group' => $id ? 'Редактировать группу' : 'Новая группа', 'pages' => 'Страницы', 'page' => $id ? 'Редактировать страницу' : 'Новая страница'][$view];
+$title = ['fields' => 'Custom Fields', 'field-group' => $id ? 'Редактировать группу' : 'Новая группа', 'pages' => 'Страницы', 'page' => $id ? 'Редактировать страницу' : 'Новая страница'][$view];
 $notice = $_SESSION['notice'] ?? ''; unset($_SESSION['notice']);
 $record = [];
 if ($view === 'page') {

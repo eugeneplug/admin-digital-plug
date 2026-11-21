@@ -4,7 +4,7 @@ require dirname(__DIR__) . '/guard.php';
 $nav = [
     'dashboard' => ['grid', 'Обзор'],
     'pages' => ['file', 'Страницы'],
-    'fields' => ['layers', 'Поля'],
+    'fields' => ['layers', 'Custom Fields'],
     'code' => ['code', 'Редактор кода'],
     'settings' => ['settings', 'Настройки'],
 ];

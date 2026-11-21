@@ -10,7 +10,7 @@
 <?php if ($view === 'fields'): ?>
     <?php $groups = array_filter(fieldGroups($db), static fn(array $group): bool => $group['scope'] === 'page'); ?>
     <div class="page-heading fields-heading">
-        <div><h1>Группы полей</h1><p>Создавайте поля и назначайте их страницам.</p></div>
+        <div><h1><?= e($title) ?></h1><p>Создавайте поля и назначайте их страницам.</p></div>
         <a class="button button-primary" href="<?= e(adminUrl('field-group')) ?>"><?php icon('plus'); ?> Новая группа</a>
     </div>
     <section class="panel groups-panel" data-group-list aria-label="Группы полей">
@@ -74,7 +74,7 @@
     <?php endforeach; ?>
     </div>
 <?php elseif ($view === 'field-group'): ?>
-    <a class="text-link back-link" href="<?= e(adminUrl('fields')) ?>"><?php icon('chevron'); ?> К группам полей</a>
+    <a class="text-link back-link" href="<?= e(adminUrl('fields')) ?>"><?php icon('chevron'); ?> К Custom Fields</a>
     <form class="group-form" method="post" data-group-form>
         <?php csrfField(); ?>
         <input type="hidden" name="definition" value="<?= e($record['definition']) ?>">

@@ -22,7 +22,7 @@ require dirname(__DIR__) . '/guard.php';
     <section class="panel quick">
         <div class="panel-heading"><h2>Быстрые действия</h2></div>
         <div class="quick-list">
-            <a href="<?= e(adminUrl('fields')) ?>"><span class="tile-icon tint-blue"><?php icon('layers'); ?></span><strong>Поля страниц</strong><?php icon('chevron', 'row-chevron'); ?></a>
+            <a href="<?= e(adminUrl('fields')) ?>"><span class="tile-icon tint-blue"><?php icon('layers'); ?></span><strong>Custom Fields</strong><?php icon('chevron', 'row-chevron'); ?></a>
             <a href="../" target="_blank" rel="noopener"><span class="tile-icon tint-violet"><?php icon('globe'); ?></span><strong>Посмотреть сайт</strong><?php icon('external', 'row-chevron'); ?></a>
             <a href="<?= e(adminUrl('settings')) ?>"><span class="tile-icon tint-neutral"><?php icon('shield'); ?></span><strong>Безопасность</strong><?php icon('chevron', 'row-chevron'); ?></a>
         </div>
