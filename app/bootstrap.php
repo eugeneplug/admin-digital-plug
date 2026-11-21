@@ -13,6 +13,8 @@ require_once __DIR__ . '/security.php';
 require_once __DIR__ . '/content.php';
 require_once __DIR__ . '/view.php';
 require_once __DIR__ . '/theme.php';
+require_once __DIR__ . '/fields.php';
+require_once __DIR__ . '/media.php';
 
 final class SetupException extends RuntimeException {}
 final class ValidationException extends RuntimeException {}
@@ -37,7 +39,7 @@ function securityHeaders(bool $admin = false): void
 {
     header_remove('X-Powered-By');
     header('Content-Type: text/html; charset=UTF-8');
-    header("Content-Security-Policy: default-src 'none'; style-src 'self'; script-src 'self'; img-src 'self'; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
+    header("Content-Security-Policy: default-src 'none'; style-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' https: http:; font-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'");
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: DENY');
     header('Referrer-Policy: same-origin');
@@ -77,6 +79,7 @@ function openSite(string $root): PDO
         if ($db === null) {
             redirect($root . '?setup=1');
         }
+        migrateFields($db);
         return $db;
     } catch (SetupException $error) {
         problem(503, 'Сайт ещё не настроен', $error->getMessage(), $root);

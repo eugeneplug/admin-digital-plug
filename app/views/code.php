@@ -34,7 +34,7 @@
                 <button class="code-tool" type="button" data-code-menu aria-label="Действия с кодом" aria-controls="code-context" aria-expanded="false" hidden>⋯</button>
             </div>
         </div>
-        <textarea id="theme-source" name="source" data-mode="<?= e(THEME_FILES[$themeFile][2]) ?>" spellcheck="false" autocapitalize="off">
+        <textarea id="theme-source" name="source" data-mode="<?= e(themeFiles()[$themeFile][2]) ?>" spellcheck="false" autocapitalize="off">
 <?= e($themeSource) ?></textarea>
         <div class="code-status">
             <span data-code-status role="status"><?= $error === '' ? 'Сохранено' : 'Изменения не сохранены' ?></span>
@@ -45,15 +45,23 @@
     <aside class="panel code-files" aria-label="Файлы сайта">
         <h2>Файлы сайта</h2>
         <nav aria-label="Файлы темы">
-            <?php foreach (THEME_FILES as $filename => [$format, $description]): ?>
+            <?php foreach (themeFiles() as $filename => [$format, $description]): ?>
                 <a class="code-file" href="<?= e(themeEditorUrl($filename)) ?>" <?= $themeFile === $filename ? 'aria-current="page"' : '' ?>>
                     <span class="code-file-format" aria-hidden="true"><?= e($format) ?></span>
                     <span class="code-file-description"><strong><?= e($filename) ?></strong><small><?= e($description) ?></small></span>
                 </a>
             <?php endforeach; ?>
         </nav>
-        <?php if (THEME_FILES[$themeFile][0] === 'HTML'): ?>
-            <p class="code-file-help">Переменные в <code>{{ }}</code> подставляют данные или разметку из других шаблонов.</p>
+        <?php if (themeFiles()[$themeFile][0] === 'PHP'): ?>
+            <p class="code-file-help"><code>field('ключ')</code> выводит поле. <code>get_field('ключ')</code> получает значение или строки повторителя. <code>component('имя')</code> подключает компонент.</p>
         <?php endif; ?>
+        <details class="code-file-help"><summary>Новый компонент</summary>
+            <form method="post">
+                <?php csrfField(); ?>
+                <label for="component-name">Имя компонента</label>
+                <input id="component-name" name="component_name" pattern="[a-z][a-z0-9-]{0,49}" maxlength="50" required>
+                <button class="button button-secondary" name="action" value="create-component">Создать</button>
+            </form>
+        </details>
     </aside>
 </div>

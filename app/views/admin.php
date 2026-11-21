@@ -4,7 +4,10 @@ require dirname(__DIR__) . '/guard.php';
 $nav = [
     'dashboard' => ['grid', 'Обзор'],
     'blocks' => ['layers', 'Блоки сайта'],
+    'pages' => ['file', 'Страницы'],
     'articles' => ['file', 'Статьи'],
+    'fields' => ['layers', 'Поля'],
+    'options' => ['globe', 'Данные сайта'],
     'code' => ['code', 'Редактор кода'],
     'settings' => ['settings', 'Настройки'],
 ];
@@ -18,10 +21,14 @@ $nav = [
     <title><?= e($title) ?> · Plugy Engine</title>
     <link rel="stylesheet" href="<?= e(assetUrl('style.css', $root, versioned: true)) ?>">
     <script src="<?= e(assetUrl('app.js', $root)) ?>" defer></script>
+    <script src="<?= e(assetUrl('fields.js', $root, versioned: true)) ?>" defer></script>
+    <link rel="stylesheet" href="<?= e(assetUrl('fields.css', $root, versioned: true)) ?>">
     <?php if ($view === 'code'): ?>
         <link rel="stylesheet" href="<?= e(assetUrl('codemirror/codemirror.css', $root)) ?>">
         <link rel="stylesheet" href="<?= e(assetUrl('code-editor.css', $root, versioned: true)) ?>">
         <script src="<?= e(assetUrl('codemirror/codemirror.js', $root)) ?>" defer></script>
+        <script src="<?= e(assetUrl('codemirror/clike.js', $root)) ?>" defer></script>
+        <script src="<?= e(assetUrl('codemirror/php.js', $root)) ?>" defer></script>
         <?php foreach (['beautify.js', 'beautify-css.js', 'beautify-html.js'] as $formatter): ?>
             <script src="<?= e(assetUrl('beautify/' . $formatter, $root)) ?>" defer></script>
         <?php endforeach; ?>
@@ -77,6 +84,7 @@ $nav = [
                 'block', 'article' => __DIR__ . '/editor.php',
                 'code' => __DIR__ . '/code.php',
                 'settings' => __DIR__ . '/settings.php',
+                'fields', 'field-group', 'options', 'pages', 'page' => __DIR__ . '/fields.php',
             }; ?>
         </main>
     </div>

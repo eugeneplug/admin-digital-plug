@@ -29,37 +29,32 @@ if (array_key_exists('theme_asset', $_GET)) {
     echo $file === 'base.css' ? str_replace('{{font_url}}', assetUrl('fonts/inter-variable.ttf', $root), $source) : $source;
     exit;
 }
+if (array_key_exists('media', $_GET)) serveFieldImage(query('media'));
 $db = openSite($root);
 $article = null;
-
+$page = null;
 if (array_key_exists('article', $_GET)) {
-    $slug = query('article');
-    $article = strlen($slug) <= 100 ? publishedArticle($db, $slug) : false;
-    if (!$article) {
-        problem(404, 'Статья не найдена', 'Проверьте ссылку или выберите статью в журнале.', $root);
-    }
+    $article = publishedArticle($db, query('article'));
+    if (!$article) problem(404, 'Статья не найдена', 'Проверьте ссылку.', $root);
+    fieldContext('article:' . $article['id']);
+    $view = 'article'; $data = ['article' => $article]; $title = $article['title'];
 } else {
-    $blocks = siteBlocks($db, visibleOnly: true);
-    $articles = articles($db, publishedOnly: true);
+    $slug = query('page') ?: 'home';
+    $read = $db->prepare("SELECT * FROM pages WHERE slug = ? AND status = 'published'");
+    $read->execute([$slug]); $page = $read->fetch();
+    if (!$page) problem(404, 'Страница не найдена', 'Проверьте ссылку.', $root);
+    fieldContext('page:' . $page['id']);
+    $view = $slug === 'home' ? 'home' : 'page';
+    $data = ['page' => $page, 'blocks' => siteBlocks($db, true), 'articles' => articles($db, true)];
+    $title = $page['title'];
 }
+$level = ob_get_level();
 ob_start();
-require __DIR__ . '/views/site.php';
-$content = ob_get_clean();
-
-ob_start();
-brand();
-$brand = ob_get_clean();
-
-ob_start();
-icon('lock');
-$lockIcon = ob_get_clean();
-
-echo strtr(readThemeFile('index.html'), [
-    '{{title}}' => e($article ? $article['title'] . ' · Plugy Engine' : 'Plugy Engine'),
-    '{{base_css}}' => './?theme_asset=base.css',
-    '{{theme_css}}' => './?theme_asset=styles.css',
-    '{{theme_js}}' => './?theme_asset=script.js',
-    '{{brand}}' => $brand,
-    '{{lock_icon}}' => $lockIcon,
-    '{{content}}' => $content,
-]);
+try {
+    template('index', ['view' => $view, 'data' => $data, 'title' => $title . ' · Plugy Engine']);
+    ob_end_flush();
+} catch (Throwable $error) {
+    while (ob_get_level() > $level) ob_end_clean();
+    error_log($error::class . ': ' . $error->getMessage());
+    problem(500, 'Ошибка шаблона', 'Проверьте PHP-шаблон сайта в редакторе кода админки.', $root);
+}

@@ -1,0 +1,19 @@
+.field-list { padding: 8px 20px; }
+.field-list-row { display: flex; align-items: center; gap: 18px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.field-list-row:last-child { border: 0; }
+.field-list-row strong { flex: 1; }
+.field-list-row span, .field-list-row small, .field-help { color: var(--muted); }
+.field-help { margin: 16px 0; line-height: 1.7; }
+.field-help code { color: var(--blue); }
+.field-builder-list, .field-repeat-list, .field-value-group { display: grid; gap: 18px; }
+.field-builder-row, .field-repeat-row { padding: 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--canvas); animation: enter .2s ease both; }
+.field-row-tools { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.field-row-tools .button { min-height: 32px; padding: 5px 10px; font-size: 12px; }
+.field-children, .field-repeat { min-width: 0; margin: 18px 0 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+.field-children legend, .field-repeat legend { padding: 0 6px; font-weight: 650; }
+[data-definition-builder] > .button, .field-children > .button, .field-repeat > .button { margin-top: 12px; }
+.field-value-group { padding-block: 20px; border-top: 1px solid var(--line); }
+.field-value-group h2 { font-size: 19px; }
+.field-repeat-row > .field + .field { margin-top: 14px; }
+.custom-fields input[type="checkbox"], .field-builder-row input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--blue); }
+@media (max-width: 600px) { .field-list-row { align-items: start; flex-direction: column; gap: 5px; } .field-builder-row, .field-repeat-row, .field-children, .field-repeat { padding: 12px; } }

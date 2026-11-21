@@ -79,6 +79,7 @@ $formUrl = adminUrl($view, $id);
             </div>
         </div>
     <?php endif; ?>
+    <?php if (!$forBlock) fieldValuesForm($db, 'article', $id); ?>
     <div class="form-actions">
         <button class="button button-primary" type="submit" name="action" value="save">
             <?php icon('check'); ?>

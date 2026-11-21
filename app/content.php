@@ -116,7 +116,7 @@ function makeSlug(string $title): string
     return trim(substr($slug, 0, 100), '-') ?: 'article-' . bin2hex(random_bytes(5));
 }
 
-function saveArticle(PDO $db, int $id, array $data): void
+function saveArticle(PDO $db, int $id, array $data): int
 {
     $title = textField($data['title'], 120, 'Заголовок', true);
     $excerpt = textField($data['excerpt'], 280, 'Анонс');
@@ -144,10 +144,11 @@ function saveArticle(PDO $db, int $id, array $data): void
             if ($save->rowCount() !== 1 && !findContent($db, 'article', $id)) {
                 throw new ValidationException('Эта статья уже удалена.');
             }
-            return;
+            return $id;
         }
         $db->prepare('INSERT INTO articles (title, slug, excerpt, body, status, published_at, updated_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)')->execute([$title, $slug, $excerpt, $body, $status, $publishedAt, $now]);
+        return (int) $db->lastInsertId();
     } catch (PDOException $error) {
         if ((int) ($error->errorInfo[1] ?? 0) === 1062
             || str_contains($error->getMessage(), 'UNIQUE constraint failed: articles.slug')) {

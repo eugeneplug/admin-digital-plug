@@ -112,10 +112,10 @@ function siteDatabase(): ?PDO
 function isInstalled(PDO $db): bool
 {
     $version = usesMysql($db) ? mysqlSchemaVersion($db) : (int) $db->query('PRAGMA user_version')->fetchColumn();
-    if ($version !== 0 && $version !== 1) {
+    if (!in_array($version, [0, 1, 2], true)) {
         throw new SetupException('Версия базы данных несовместима с этой версией Plugy Engine.');
     }
-    return $version === 1;
+    return $version >= 1;
 }
 
 function writeTransaction(PDO $db, callable $write): mixed

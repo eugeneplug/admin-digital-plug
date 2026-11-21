@@ -221,6 +221,7 @@ function setupContextMenu() {
         } else if (command === 'format') {
             const formatter = {
                 htmlmixed: window.html_beautify,
+                'application/x-httpd-php': window.html_beautify,
                 css: window.css_beautify,
                 javascript: window.js_beautify,
             }[sourceField.dataset.mode];

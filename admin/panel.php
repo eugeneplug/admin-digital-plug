@@ -61,7 +61,21 @@ if ($login) {
     redirect(adminUrl());
 }
 
+if ($method === 'POST' && post('action') === 'upload-image') {
+    header('Content-Type: application/json; charset=UTF-8');
+    try {
+        echo json_encode(['url' => uploadFieldImage($_FILES['image'] ?? [])], JSON_THROW_ON_ERROR);
+    } catch (ValidationException | SetupException $validation) {
+        http_response_code(422); echo json_encode(['error' => $validation->getMessage()], JSON_THROW_ON_ERROR);
+    }
+    exit;
+}
+
 $view = query('view') ?: 'dashboard';
+if (in_array($view, ['fields', 'field-group', 'options', 'pages', 'page'], true)) {
+    require $app . '/fields-admin.php';
+    exit;
+}
 $pages = [
     'dashboard' => 'Обзор',
     'blocks' => 'Блоки сайта',
@@ -76,8 +90,8 @@ if (!isset($pages[$view])) {
 }
 
 if ($view === 'code') {
-    $themeFile = query('file') ?: 'home.html';
-    if (!isset(THEME_FILES[$themeFile])) {
+    $themeFile = query('file') ?: 'home.php';
+    if (!isset(themeFiles()[$themeFile])) {
         problem(404, 'Файл не найден', 'Выберите файл из списка в редакторе кода.', $root);
     }
     $themeSource = readThemeFile($themeFile);
@@ -108,6 +122,9 @@ if ($editing) {
 if ($method === 'POST') {
     $action = post('action');
     try {
+        if ($view === 'code' && $action === 'create-component') {
+            redirect(themeEditorUrl(createComponent(trim(post('component_name')))));
+        }
         if ($view === 'code' && $action === 'save-code' && is_string($_POST['source'] ?? null)) {
             $themeSource = post('source');
             $themeRevision = post('revision');
@@ -130,7 +147,11 @@ if ($method === 'POST') {
                 $_SESSION['notice'] = 'Блок сохранён.';
                 redirect(adminUrl('blocks'));
             }
-            saveArticle($db, $id, $record);
+            $customValues = prepareFieldValues($db, 'article', $id, post('field_values'));
+            writeTransaction($db, static function () use ($db, $id, $record, $customValues): void {
+                $savedId = saveArticle($db, $id, $record);
+                storeFieldValues($db, 'article:' . $savedId, $customValues);
+            });
             $_SESSION['notice'] = $record['status'] === 'published' ? 'Статья опубликована.' : 'Черновик сохранён.';
             redirect(adminUrl('articles'));
         }
