@@ -1,13 +1,16 @@
 <?php
 require dirname(__DIR__) . '/guard.php';
 
-$nav = [
+$managementNav = [
     'dashboard' => ['grid', 'Обзор'],
     'pages' => ['file', 'Страницы'],
+];
+$developerNav = [
     'fields' => ['layers', 'Custom Fields'],
     'code' => ['code', 'Редактор кода'],
     'settings' => ['settings', 'Настройки'],
 ];
+$nav = $managementNav + $developerNav;
 ?>
 <!doctype html>
 <html lang="ru">
@@ -40,21 +43,31 @@ $nav = [
         <button class="icon-button sidebar-close" type="button" data-menu-close aria-label="Закрыть меню" hidden><?php icon('close'); ?></button>
         <nav class="sidebar-nav" aria-label="Панель управления">
             <span class="nav-caption">Управление</span>
-            <?php foreach ($nav as $name => [$glyph, $label]): ?>
+            <?php foreach ($managementNav as $name => [$glyph, $label]): ?>
                 <a href="<?= e(adminUrl($name)) ?>" <?= $active === $name ? 'aria-current="page"' : '' ?>>
                     <?php icon($glyph); ?><span><?= e($label) ?></span>
                 </a>
             <?php endforeach; ?>
         </nav>
-        <div class="sidebar-footer">
-            <div class="sidebar-profile">
-                <div class="avatar" aria-hidden="true">A</div>
-                <div><strong>admin</strong><span>Администратор</span></div>
+        <div class="sidebar-bottom">
+            <nav class="sidebar-nav" aria-label="Разработчику">
+                <span class="nav-caption">Разработчику</span>
+                <?php foreach ($developerNav as $name => [$glyph, $label]): ?>
+                    <a href="<?= e(adminUrl($name)) ?>" <?= $active === $name ? 'aria-current="page"' : '' ?>>
+                        <?php icon($glyph); ?><span><?= e($label) ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-profile">
+                    <div class="avatar" aria-hidden="true">A</div>
+                    <div><strong>admin</strong><span>Администратор</span></div>
+                </div>
+                <form action="<?= e(adminUrl()) ?>" method="post">
+                    <?php csrfField(); ?>
+                    <button class="sign-out" name="action" value="logout"><?php icon('logout'); ?> Выйти</button>
+                </form>
             </div>
-            <form action="<?= e(adminUrl()) ?>" method="post">
-                <?php csrfField(); ?>
-                <button class="sign-out" name="action" value="logout"><?php icon('logout'); ?> Выйти</button>
-            </form>
         </div>
     </aside>
     <button class="mobile-overlay" type="button" data-menu-close aria-label="Закрыть меню" hidden></button>
