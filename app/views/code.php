@@ -7,7 +7,7 @@
     <button class="button button-primary" form="theme-editor" type="submit"><?php icon('check'); ?> Сохранить</button>
 </div>
 
-<div class="code-context" data-code-context role="group" aria-label="Действия с кодом" hidden>
+<div class="code-context" id="code-context" data-code-context role="group" aria-label="Действия с кодом" hidden>
     <button type="button" data-code-command="copy">Копировать</button>
     <button type="button" data-code-command="paste">Вставить</button>
     <button type="button" data-code-command="cut">Вырезать</button>
@@ -29,7 +29,10 @@
         <input type="hidden" name="revision" value="<?= e($themeRevision) ?>">
         <div class="code-toolbar">
             <label for="theme-source"><?php icon('code'); ?> <span><small>site/</small><?= e($themeFile) ?></span></label>
-            <button class="code-tool" type="button" data-code-search hidden><?php icon('search'); ?> Найти</button>
+            <div class="code-tools">
+                <button class="code-tool" type="button" data-code-search hidden><?php icon('search'); ?> Найти</button>
+                <button class="code-tool" type="button" data-code-menu aria-label="Действия с кодом" aria-controls="code-context" aria-expanded="false" hidden>⋯</button>
+            </div>
         </div>
         <textarea id="theme-source" name="source" data-mode="<?= e(THEME_FILES[$themeFile][2]) ?>" spellcheck="false" autocapitalize="off">
 <?= e($themeSource) ?></textarea>

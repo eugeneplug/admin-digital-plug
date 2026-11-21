@@ -16,9 +16,16 @@ function articleUrl(string $slug, string $root = './'): string
     return $root . '?article=' . rawurlencode($slug);
 }
 
-function assetUrl(string $name, string $root): string
+function assetUrl(string $name, string $root, bool $versioned = false): string
 {
-    return $root . 'admin/assets/' . $name;
+    $url = $root . 'admin/assets/' . $name;
+    if ($versioned) {
+        $hash = @hash_file('sha256', dirname(__DIR__) . '/admin/assets/' . $name);
+        if ($hash !== false) {
+            $url .= '?v=' . substr($hash, 0, 12);
+        }
+    }
+    return $url;
 }
 
 function dateLabel(int $timestamp): string

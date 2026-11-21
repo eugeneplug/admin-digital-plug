@@ -28,6 +28,7 @@
 .code-toolbar label, .code-tool { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 680; }
 .code-toolbar label .icon { width: 17px; height: 17px; color: #9abaff; }
 .code-toolbar label small { color: #a9b8d4; font-size: inherit; font-weight: 500; }
+.code-tools { display: flex; align-items: center; gap: 6px; }
 .code-tool {
     padding: 5px 8px;
     border: 1px solid #3d4d6b;
@@ -38,6 +39,7 @@
 }
 .code-tool:hover { background: #273a5c; border-color: #6783b6; }
 .code-tool .icon { width: 15px; height: 15px; }
+.code-tool[data-code-menu] { justify-content: center; min-width: 32px; font-size: 18px; line-height: 1.1; }
 .code-status { min-height: 42px; border-top: 1px solid #2d3c57; color: #b7c6e0; font-size: 12px; }
 .code-status [role="status"]::before {
     display: inline-block;
@@ -129,6 +131,8 @@
 }
 
 @media (max-width: 410px) {
+    .code-toolbar { flex-wrap: wrap; }
+    .code-toolbar label small { display: none; }
     .code-files nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .code-file-format { display: none; }
     .code-file { justify-content: center; }

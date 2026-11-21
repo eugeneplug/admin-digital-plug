@@ -16,16 +16,16 @@ $nav = [
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title><?= e($title) ?> · Plugy Engine</title>
-    <link rel="stylesheet" href="<?= e(assetUrl('style.css', $root)) ?>">
+    <link rel="stylesheet" href="<?= e(assetUrl('style.css', $root, versioned: true)) ?>">
     <script src="<?= e(assetUrl('app.js', $root)) ?>" defer></script>
     <?php if ($view === 'code'): ?>
         <link rel="stylesheet" href="<?= e(assetUrl('codemirror/codemirror.css', $root)) ?>">
-        <link rel="stylesheet" href="<?= e(assetUrl('code-editor.css', $root)) ?>">
+        <link rel="stylesheet" href="<?= e(assetUrl('code-editor.css', $root, versioned: true)) ?>">
         <script src="<?= e(assetUrl('codemirror/codemirror.js', $root)) ?>" defer></script>
         <?php foreach (['beautify.js', 'beautify-css.js', 'beautify-html.js'] as $formatter): ?>
             <script src="<?= e(assetUrl('beautify/' . $formatter, $root)) ?>" defer></script>
         <?php endforeach; ?>
-        <script src="<?= e(assetUrl('code-editor.js', $root)) ?>" defer></script>
+        <script src="<?= e(assetUrl('code-editor.js', $root, versioned: true)) ?>" defer></script>
     <?php endif; ?>
 </head>
 <body class="admin-page">
