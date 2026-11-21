@@ -39,7 +39,6 @@
 }
 .code-tool:hover { background: #273a5c; border-color: #6783b6; }
 .code-tool .icon { width: 15px; height: 15px; }
-.code-tool[data-code-menu] { justify-content: center; min-width: 32px; font-size: 18px; line-height: 1.1; }
 .code-status { min-height: 42px; border-top: 1px solid #2d3c57; color: #b7c6e0; font-size: 12px; }
 .code-status [role="status"]::before {
     display: inline-block;

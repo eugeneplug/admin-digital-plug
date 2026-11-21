@@ -31,7 +31,6 @@
             <label for="theme-source"><?php icon('code'); ?> <span><small>site/</small><?= e($themeFile) ?></span></label>
             <div class="code-tools">
                 <button class="code-tool" type="button" data-code-search hidden><?php icon('search'); ?> Найти</button>
-                <button class="code-tool" type="button" data-code-menu aria-label="Действия с кодом" aria-controls="code-context" aria-expanded="false" hidden>⋯</button>
             </div>
         </div>
         <textarea id="theme-source" name="source" data-mode="<?= e(themeFiles()[$themeFile][2]) ?>" spellcheck="false" autocapitalize="off">
@@ -52,6 +51,5 @@
                 </a>
             <?php endforeach; ?>
         </nav>
-        <p class="code-file-help"><code>field('test_title')</code> выводит поле страницы. <code>get_field('ключ')</code> получает значение или строки повторителя.</p>
     </aside>
 </div>

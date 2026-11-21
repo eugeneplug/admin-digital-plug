@@ -12,6 +12,39 @@ const initialSource = sourceField.value;
 const hasUnsavedSource = codeForm.dataset.unsaved === 'true';
 let editor;
 
+const pairedTags = new Set(`a abbr address article aside audio b bdi bdo blockquote body button canvas caption cite
+    code colgroup data datalist dd del details dfn dialog div dl dt em fieldset figcaption figure footer form
+    h1 h2 h3 h4 h5 h6 head header hgroup html i iframe ins kbd label legend li main map mark menu meter nav
+    noscript object ol optgroup option output p picture pre progress q rp rt ruby s samp script search section
+    select slot small span strong style sub summary sup table tbody td template textarea tfoot th thead time
+    title tr u ul var video`.split(/\s+/));
+const voidTags = new Set('area base br col embed hr img input link meta param source track wbr'.split(' '));
+
+function expandHtmlTag(cm) {
+    const {Pass, innerMode} = window.CodeMirror;
+    if (cm.getOption('disableInput') || cm.getOption('readOnly') || cm.somethingSelected() || cm.listSelections().length !== 1) return Pass;
+
+    const cursor = cm.getCursor();
+    const line = cm.getLine(cursor.line);
+    const abbreviation = /(?:^|>)\s*([a-z][a-z\d-]*)$/i.exec(line.slice(0, cursor.ch));
+    if (!abbreviation || !/^(?:\s|<|$)/.test(line.slice(cursor.ch))) return Pass;
+
+    const tag = abbreviation[1].toLowerCase();
+    if (!pairedTags.has(tag) && !voidTags.has(tag)) return Pass;
+
+    const token = cm.getTokenAt(cursor);
+    const {mode, state} = innerMode(cm.getMode(), token.state);
+    if (mode.configuration !== 'html' || token.type || mode.xmlCurrentTag(state)) return Pass;
+    if (['textarea', 'title'].includes(mode.xmlCurrentContext(state).at(-1))) return Pass;
+
+    const start = {line: cursor.line, ch: cursor.ch - abbreviation[1].length};
+    const open = `<${tag}>`;
+    cm.operation(() => {
+        cm.replaceRange(voidTags.has(tag) ? open : `${open}</${tag}>`, start, cursor, '+input');
+        cm.setCursor(start.line, start.ch + open.length);
+    });
+}
+
 function saveCode() {
     if (!saveButton.disabled && !document.querySelector('[data-code-paste][open]')) {
         editor?.save();
@@ -42,7 +75,8 @@ if (window.CodeMirror) {
         lineNumbers: true,
         matchBrackets: true,
         resetSelectionOnContextMenu: false,
-        extraKeys: { 'Ctrl-S': saveCode, 'Cmd-S': saveCode },
+        autoCloseTags: { indentTags: [] },
+        extraKeys: { Tab: expandHtmlTag, 'Ctrl-S': saveCode, 'Cmd-S': saveCode },
         indentUnit: 4,
         tabSize: 4,
         screenReaderLabel: 'Код файла темы',
@@ -95,7 +129,6 @@ function setupContextMenu() {
     const menu = document.querySelector('[data-code-context]');
     const dialog = document.querySelector('[data-code-paste]');
     const pasteField = dialog.querySelector('textarea');
-    const trigger = document.querySelector('[data-code-menu]');
     const surface = editor?.getWrapperElement() ?? sourceField;
     let editorClipboard = '';
     document.body.append(menu, dialog);
@@ -124,7 +157,6 @@ function setupContextMenu() {
             menu.querySelector(`[data-code-command="${command}"]`).disabled = !hasSelection;
         }
         menu.hidden = false;
-        trigger.setAttribute('aria-expanded', 'true');
         menu.style.left = Math.max(4, Math.min(x, innerWidth - menu.offsetWidth - 4)) + 'px';
         menu.style.top = Math.max(4, Math.min(y, innerHeight - menu.offsetHeight - 4)) + 'px';
         if (focusAction) menu.querySelector('button:enabled').focus({ preventScroll: true });
@@ -132,7 +164,6 @@ function setupContextMenu() {
 
     function closeMenu() {
         menu.hidden = true;
-        trigger.setAttribute('aria-expanded', 'false');
     }
 
     function openContextMenu(event) {
@@ -165,18 +196,9 @@ function setupContextMenu() {
         }
     });
     document.addEventListener('pointerdown', event => {
-        if (!menu.contains(event.target) && !trigger.contains(event.target)) closeMenu();
+        if (!menu.contains(event.target)) closeMenu();
     });
     window.addEventListener('resize', closeMenu);
-    trigger.hidden = false;
-    trigger.addEventListener('click', () => {
-        if (!menu.hidden) {
-            closeMenu();
-            return;
-        }
-        const anchor = trigger.getBoundingClientRect();
-        showMenu(anchor.left, anchor.bottom + 4, true);
-    });
     menu.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
             closeMenu();

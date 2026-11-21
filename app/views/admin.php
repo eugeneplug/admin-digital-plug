@@ -26,6 +26,8 @@ $nav = [
         <script src="<?= e(assetUrl('codemirror/codemirror.js', $root)) ?>" defer></script>
         <script src="<?= e(assetUrl('codemirror/clike.js', $root)) ?>" defer></script>
         <script src="<?= e(assetUrl('codemirror/php.js', $root)) ?>" defer></script>
+        <script src="<?= e(assetUrl('codemirror/xml-fold.js', $root, versioned: true)) ?>" defer></script>
+        <script src="<?= e(assetUrl('codemirror/closetag.js', $root, versioned: true)) ?>" defer></script>
         <?php foreach (['beautify.js', 'beautify-css.js', 'beautify-html.js'] as $formatter): ?>
             <script src="<?= e(assetUrl('beautify/' . $formatter, $root)) ?>" defer></script>
         <?php endforeach; ?>
