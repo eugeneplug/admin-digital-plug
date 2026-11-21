@@ -3,11 +3,8 @@ require dirname(__DIR__) . '/guard.php';
 
 $nav = [
     'dashboard' => ['grid', 'Обзор'],
-    'blocks' => ['layers', 'Блоки сайта'],
     'pages' => ['file', 'Страницы'],
-    'articles' => ['file', 'Статьи'],
     'fields' => ['layers', 'Поля'],
-    'options' => ['globe', 'Данные сайта'],
     'code' => ['code', 'Редактор кода'],
     'settings' => ['settings', 'Настройки'],
 ];
@@ -80,11 +77,9 @@ $nav = [
             <?php endif; ?>
             <?php require match ($view) {
                 'dashboard' => __DIR__ . '/dashboard.php',
-                'blocks', 'articles' => __DIR__ . '/listing.php',
-                'block', 'article' => __DIR__ . '/editor.php',
                 'code' => __DIR__ . '/code.php',
                 'settings' => __DIR__ . '/settings.php',
-                'fields', 'field-group', 'options', 'pages', 'page' => __DIR__ . '/fields.php',
+                'fields', 'field-group', 'pages', 'page' => __DIR__ . '/fields.php',
             }; ?>
         </main>
     </div>

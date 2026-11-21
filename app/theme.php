@@ -6,6 +6,7 @@ const THEME_FILES = [
     'header.php' => ['PHP', 'Шапка сайта', 'application/x-httpd-php'],
     'footer.php' => ['PHP', 'Подвал сайта', 'application/x-httpd-php'],
     'home.php' => ['PHP', 'Главная и журнал', 'application/x-httpd-php'],
+    'content.php' => ['PHP', 'Тексты главной и журнала', 'application/x-httpd-php'],
     'page.php' => ['PHP', 'Страница', 'application/x-httpd-php'],
     'article.php' => ['PHP', 'Статья', 'application/x-httpd-php'],
     'components/block.php' => ['PHP', 'Блок главной', 'application/x-httpd-php'],

@@ -62,15 +62,7 @@
         let initial = []; try { initial = JSON.parse(hidden.value); } catch {}
         const collect = definitions(form.querySelector('[data-definition-builder]'), Array.isArray(initial) ? initial : []);
         form.addEventListener('submit', () => { hidden.value = JSON.stringify(collect()); });
-        const scope = form.elements.scope, target = form.elements.target_id;
-        const refresh = () => {
-            for (const option of target.options) {
-                option.hidden = option.disabled = Boolean(option.dataset.scope && option.dataset.scope !== scope.value);
-                if (option.disabled && option.selected) target.value = '0';
-            }
-            if (scope.value === 'options') target.value = '0';
-        };
-        scope.addEventListener('change', () => { target.value = '0'; refresh(); }); refresh();
+
     }
     function values(parent, fields, initial = {}) {
         const collectors = {};

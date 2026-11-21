@@ -31,26 +31,48 @@ if (array_key_exists('theme_asset', $_GET)) {
 }
 if (array_key_exists('media', $_GET)) serveFieldImage(query('media'));
 $db = openSite($root);
-$article = null;
-$page = null;
-if (array_key_exists('article', $_GET)) {
-    $article = publishedArticle($db, query('article'));
-    if (!$article) problem(404, 'Статья не найдена', 'Проверьте ссылку.', $root);
-    fieldContext('article:' . $article['id']);
-    $view = 'article'; $data = ['article' => $article]; $title = $article['title'];
-} else {
+$showArticle = array_key_exists('article', $_GET);
+if (!$showArticle) {
     $slug = query('page') ?: 'home';
     $read = $db->prepare("SELECT * FROM pages WHERE slug = ? AND status = 'published'");
     $read->execute([$slug]); $page = $read->fetch();
     if (!$page) problem(404, 'Страница не найдена', 'Проверьте ссылку.', $root);
     fieldContext('page:' . $page['id']);
     $view = $slug === 'home' ? 'home' : 'page';
-    $data = ['page' => $page, 'blocks' => siteBlocks($db, true), 'articles' => articles($db, true)];
+    $data = ['page' => $page];
     $title = $page['title'];
 }
 $level = ob_get_level();
 ob_start();
 try {
+    if ($showArticle || $view === 'home') {
+        $content = require themePath('content.php');
+        $journal = [];
+        foreach ($content['articles'] as [$titleText, $articleSlug, $excerpt, $body, $date]) {
+            $journal[$articleSlug] = [
+                'title' => $titleText,
+                'slug' => $articleSlug,
+                'excerpt' => $excerpt,
+                'body' => $body,
+                'published_at' => strtotime($date),
+            ];
+        }
+        if ($showArticle) {
+            $article = $journal[query('article')] ?? null;
+            if ($article === null) {
+                ob_end_clean();
+                problem(404, 'Статья не найдена', 'Проверьте ссылку.', $root);
+            }
+            $view = 'article';
+            $title = $article['title'];
+            $data = ['article' => $article];
+        } else {
+            $data['blocks'] = array_map(static fn(array $block): array => array_combine(
+                ['kind', 'eyebrow', 'title', 'body', 'link_label', 'link_url'], $block
+            ), $content['blocks']);
+            $data['articles'] = array_values($journal);
+        }
+    }
     template('index', ['view' => $view, 'data' => $data, 'title' => $title . ' · Plugy Engine']);
     ob_end_flush();
 } catch (Throwable $error) {

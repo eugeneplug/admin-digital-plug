@@ -5,5 +5,4 @@
     <h1><?= e($article['title']) ?></h1>
     <?php if ($article['excerpt'] !== ''): ?><p class="article-lead"><?= e($article['excerpt']) ?></p><?php endif; ?>
     <div class="article-body"><?= e($article['body']) ?></div>
-    <?php // Здесь field('ключ') выводит поле текущей статьи. ?>
 </article>

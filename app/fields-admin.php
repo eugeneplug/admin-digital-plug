@@ -2,7 +2,7 @@
 require __DIR__ . '/guard.php';
 $id = filter_var(query('id'), FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) ?: 0;
 $active = match ($view) { 'field-group' => 'fields', 'page' => 'pages', default => $view };
-$title = ['fields' => 'Поля', 'field-group' => $id ? 'Редактировать группу' : 'Новая группа', 'options' => 'Данные сайта', 'pages' => 'Страницы', 'page' => $id ? 'Редактировать страницу' : 'Новая страница'][$view];
+$title = ['fields' => 'Поля', 'field-group' => $id ? 'Редактировать группу' : 'Новая группа', 'pages' => 'Страницы', 'page' => $id ? 'Редактировать страницу' : 'Новая страница'][$view];
 $notice = $_SESSION['notice'] ?? ''; unset($_SESSION['notice']);
 $record = [];
 if ($view === 'page') {
@@ -11,7 +11,7 @@ if ($view === 'page') {
 if ($view === 'field-group') {
     $record = ['title' => '', 'scope' => 'page', 'target_id' => 0, 'definition' => '[]'];
     if ($id) {
-        $query = $db->prepare('SELECT * FROM field_groups WHERE id = ?'); $query->execute([$id]); $record = $query->fetch();
+        $query = $db->prepare('SELECT * FROM field_groups WHERE id = ? AND scope = ?'); $query->execute([$id, 'page']); $record = $query->fetch();
     }
 }
 if ($record === false || (array_key_exists('id', $_GET) && !$id)) problem(404, 'Запись не найдена', 'Откройте список заново.', $root);
@@ -19,7 +19,7 @@ if ($method === 'POST') {
     try {
         $action = post('action');
         if ($view === 'field-group' && $action === 'save-group') {
-            $record = array_replace($record, ['title' => post('title'), 'scope' => post('scope'), 'target_id' => post('target_id'), 'definition' => post('definition')]);
+            $record = array_replace($record, ['title' => post('title'), 'scope' => 'page', 'target_id' => post('target_id'), 'definition' => post('definition')]);
             writeTransaction($db, static fn() => saveFieldGroup($db, $id, $record));
             $_SESSION['notice'] = 'Группа полей сохранена.'; redirect(adminUrl('fields'));
         }
@@ -29,11 +29,6 @@ if ($method === 'POST') {
                 $db->prepare('DELETE FROM field_groups WHERE id = ?')->execute([$id]);
             });
             $_SESSION['notice'] = 'Группа удалена.'; redirect(adminUrl('fields'));
-        }
-        if ($view === 'options' && $action === 'save-values') {
-            $values = prepareFieldValues($db, 'options', 0, post('field_values'));
-            writeTransaction($db, static fn() => storeFieldValues($db, 'options', $values));
-            $_SESSION['notice'] = 'Данные сайта сохранены.'; redirect(adminUrl('options'));
         }
         if ($view === 'page' && $action === 'save-page') {
             $home = $id && $record['slug'] === 'home';

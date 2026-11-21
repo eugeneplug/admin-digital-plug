@@ -150,17 +150,4 @@ function writeTransaction(PDO $db, callable $write): mixed
 function seedDatabase(PDO $db, string $passwordHash): void
 {
     $db->prepare('INSERT INTO admin (id, password_hash, demo) VALUES (1, ?, 0)')->execute([$passwordHash]);
-    $seed = require __DIR__ . '/seed.php';
-    $now = time();
-    $block = $db->prepare('INSERT INTO blocks (kind, eyebrow, title, body, link_label, link_url, position, visible, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)');
-    foreach ($seed['blocks'] as $position => $fields) {
-        $block->execute([...$fields, $position + 1, $now]);
-    }
-    $article = $db->prepare('INSERT INTO articles (title, slug, excerpt, body, status, published_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)');
-    foreach ($seed['articles'] as [$title, $slug, $excerpt, $body, $status, $age]) {
-        $date = $now - $age * 86400;
-        $article->execute([$title, $slug, $excerpt, $body, $status, $status === 'published' ? $date : null, $date]);
-    }
 }

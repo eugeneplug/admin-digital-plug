@@ -18,15 +18,6 @@ function migrateFields(PDO $db): void
             if (!$db->query("SELECT id FROM pages WHERE slug = 'home'")->fetchColumn()) {
                 $db->prepare("INSERT INTO pages (title, slug, body, status, updated_at) VALUES (?, 'home', '', 'published', ?)")->execute(['Главная', time()]);
             }
-            // A starter group demonstrates real fields without changing existing content.
-            if (!(int) $db->query('SELECT COUNT(*) FROM field_groups')->fetchColumn()) {
-                $definition = [['key' => 'footer_text', 'label' => 'Подпись в подвале', 'type' => 'text', 'required' => false],
-                    ['key' => 'benefits', 'label' => 'Преимущества', 'type' => 'repeater', 'required' => false, 'children' => [
-                        ['key' => 'title', 'label' => 'Заголовок', 'type' => 'text', 'required' => true],
-                        ['key' => 'description', 'label' => 'Описание', 'type' => 'textarea', 'required' => false],
-                    ]]];
-                $db->prepare('INSERT INTO field_groups (title, scope, target_id, definition) VALUES (?, ?, 0, ?)')->execute(['Сайт', 'options', json_encode($definition, JSON_THROW_ON_ERROR)]);
-            }
             $db->exec(usesMysql($db) ? 'UPDATE plugy_installation SET version = 2 WHERE id = 1' : 'PRAGMA user_version = 2');
         });
     };

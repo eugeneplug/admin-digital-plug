@@ -5,7 +5,6 @@ foreach ($blocks as $block) {
     $hasHeading = $hasHeading || $heading === 'h1';
     component('block', ['block' => $block, 'heading' => $heading]);
 }
-component('benefits', ['rows' => get_field('benefits', 'options')]);
 ?>
 <?php if ($page['body'] !== ''): ?><section class="site-block"><div class="article-body"><?= e($page['body']) ?></div></section><?php endif; ?>
 <section class="journal" id="journal">
