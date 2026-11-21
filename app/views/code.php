@@ -2,7 +2,7 @@
 <div class="page-heading code-heading">
     <div>
         <h1>Редактор кода</h1>
-        <p>Шаблоны главной, блоков и статей. Сохранённые изменения сразу появятся на сайте.</p>
+        <p>Редактируйте index.php и проверяйте вывод полей на сайте.</p>
     </div>
     <button class="button button-primary" form="theme-editor" type="submit"><?php icon('check'); ?> Сохранить</button>
 </div>
@@ -52,16 +52,6 @@
                 </a>
             <?php endforeach; ?>
         </nav>
-        <?php if (themeFiles()[$themeFile][0] === 'PHP'): ?>
-            <p class="code-file-help"><code>field('ключ')</code> выводит поле. <code>get_field('ключ')</code> получает значение или строки повторителя. <code>component('имя')</code> подключает компонент.</p>
-        <?php endif; ?>
-        <details class="code-file-help"><summary>Новый компонент</summary>
-            <form method="post">
-                <?php csrfField(); ?>
-                <label for="component-name">Имя компонента</label>
-                <input id="component-name" name="component_name" pattern="[a-z][a-z0-9-]{0,49}" maxlength="50" required>
-                <button class="button button-secondary" name="action" value="create-component">Создать</button>
-            </form>
-        </details>
+        <p class="code-file-help"><code>field('test_title')</code> выводит поле страницы. <code>get_field('ключ')</code> получает значение или строки повторителя.</p>
     </aside>
 </div>

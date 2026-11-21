@@ -29,7 +29,7 @@ try { validateFieldValues(validateDefinitions($definition), ['items'=>[]]); thro
 try { validateDefinitions([$definition[0],$definition[0]]); throw new RuntimeException('Duplicate key accepted'); } catch (ValidationException) {}
 try { saveFieldGroup($db,0,['title'=>'Duplicate','scope'=>'article','target_id'=>0,'definition'=>json_encode($definition)]); throw new RuntimeException('Cross-group duplicate accepted'); } catch (ValidationException) {}
 check(!fieldUrl('javascript:alert(1)') && fieldUrl('/image.jpg') && fieldUrl('http://example.com/image.jpg'), 'URL validation');
-try { saveThemeFile('home.php','<?php function broken(', ''); throw new RuntimeException('Invalid PHP accepted'); } catch (ValidationException) {}
+try { saveThemeFile('index.php','<?php function broken(', ''); throw new RuntimeException('Invalid PHP accepted'); } catch (ValidationException) {}
 try { readThemeFile('../app/database.php'); throw new RuntimeException('Traversal accepted'); } catch (LogicException) {}
 $articleId = writeTransaction($db, fn() => saveArticle($db, 0, ['title'=>'New','slug'=>'new','excerpt'=>'','body'=>'Text','status'=>'published']));
 check($articleId === 2, 'Article save must return the ID');

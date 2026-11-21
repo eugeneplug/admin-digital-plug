@@ -86,7 +86,7 @@ if (!isset($pages[$view])) {
 }
 
 if ($view === 'code') {
-    $themeFile = query('file') ?: 'home.php';
+    $themeFile = query('file') ?: 'index.php';
     if (!isset(themeFiles()[$themeFile])) {
         problem(404, 'Файл не найден', 'Выберите файл из списка в редакторе кода.', $root);
     }
@@ -100,9 +100,6 @@ unset($_SESSION['notice']);
 if ($method === 'POST') {
     $action = post('action');
     try {
-        if ($view === 'code' && $action === 'create-component') {
-            redirect(themeEditorUrl(createComponent(trim(post('component_name')))));
-        }
         if ($view === 'code' && $action === 'save-code' && is_string($_POST['source'] ?? null)) {
             $themeSource = post('source');
             $themeRevision = post('revision');

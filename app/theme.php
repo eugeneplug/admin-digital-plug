@@ -1,49 +1,9 @@
 <?php
 declare(strict_types=1);
 
-const THEME_FILES = [
-    'index.php' => ['PHP', 'Общий каркас', 'application/x-httpd-php'],
-    'header.php' => ['PHP', 'Шапка сайта', 'application/x-httpd-php'],
-    'footer.php' => ['PHP', 'Подвал сайта', 'application/x-httpd-php'],
-    'home.php' => ['PHP', 'Главная и журнал', 'application/x-httpd-php'],
-    'content.php' => ['PHP', 'Тексты главной и журнала', 'application/x-httpd-php'],
-    'page.php' => ['PHP', 'Страница', 'application/x-httpd-php'],
-    'article.php' => ['PHP', 'Статья', 'application/x-httpd-php'],
-    'components/block.php' => ['PHP', 'Блок главной', 'application/x-httpd-php'],
-    'components/article-card.php' => ['PHP', 'Карточка статьи', 'application/x-httpd-php'],
-    'components/benefits.php' => ['PHP', 'Повторитель преимуществ', 'application/x-httpd-php'],
-    'base.css' => ['CSS', 'Базовые стили и шрифт', 'css'],
-    'styles.css' => ['CSS', 'Стили сайта', 'css'],
-    'script.js' => ['JS', 'Скрипты сайта', 'javascript'],
-];
-
 function themeFiles(): array
 {
-    $files = THEME_FILES;
-    foreach ([dirname(__DIR__) . '/site/components', dataDirectory() . '/theme/components'] as $directory) {
-        if (is_link($directory)) continue;
-        foreach (glob($directory . '/*.php') ?: [] as $path) {
-            $name = basename($path);
-            if (!is_link($path) && preg_match('/\A[a-z][a-z0-9-]{0,49}\.php\z/', $name)) {
-                $files['components/' . $name] ??= ['PHP', 'Компонент', 'application/x-httpd-php'];
-            }
-        }
-    }
-    return $files;
-}
-
-function createComponent(string $name): string
-{
-    if (!preg_match('/\A[a-z][a-z0-9-]{0,49}\z/', $name)) throw new ValidationException('В имени компонента используйте латинские буквы, цифры и дефисы.');
-    $file = 'components/' . $name . '.php';
-    if (isset(themeFiles()[$file])) throw new ValidationException('Компонент с таким именем уже существует.');
-    $directory = dataDirectory() . '/theme'; ensurePrivateDirectory($directory); ensurePrivateDirectory($directory . '/components');
-    $handle = @fopen($directory . '/' . $file, 'x');
-    if ($handle === false) throw new SetupException('Не удалось создать компонент.');
-    $source = "<?php defined('PLUGY_ENTRY') || exit; ?>\n<section>\n    <!-- Содержимое компонента -->\n</section>\n";
-    try { if (fwrite($handle, $source) !== strlen($source)) throw new SetupException('Не удалось записать компонент.'); }
-    finally { fclose($handle); }
-    return $file;
+    return ['index.php' => ['PHP', 'Шаблон страниц', 'application/x-httpd-php']];
 }
 
 function themeEditorUrl(string $file): string
@@ -63,7 +23,7 @@ function themePath(string $file): string
     if (!isset(themeFiles()[$file])) {
         throw new LogicException('Unknown theme file.');
     }
-    $directory = dataDirectory() . '/theme';
+    $directory = dataDirectory() . '/theme-single';
     $path = $directory . '/' . $file;
     if (is_link($directory) || is_link($path)) {
         throw new RuntimeException('Invalid theme file location.');
@@ -83,7 +43,7 @@ function saveThemeFile(string $file, string $source, string $revision): void
         catch (ParseError $error) { throw new ValidationException('Ошибка PHP, строка ' . $error->getLine() . ': ' . $error->getMessage()); }
     }
 
-    $directory = dataDirectory() . '/theme';
+    $directory = dataDirectory() . '/theme-single';
     ensurePrivateDirectory($directory);
     ensurePrivateDirectory(dirname($directory . '/' . $file));
     $lock = @fopen($directory . '/.editor.lock', 'c');
@@ -121,5 +81,3 @@ function template(string $name, array $variables = []): void
         require $__path;
     })($path, $variables);
 }
-
-function component(string $name, array $variables = []): void { template('components/' . $name, $variables); }

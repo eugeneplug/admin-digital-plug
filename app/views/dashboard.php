@@ -9,8 +9,8 @@ require dirname(__DIR__) . '/guard.php';
 <section class="welcome">
     <div class="welcome-copy">
         <h2>Ваш сайт под рукой</h2>
-        <p>В редакторе кода можно изменить главную, журнал и компоненты сайта.</p>
-        <a class="button button-on-dark" href="<?= e(themeEditorUrl('content.php')) ?>"><?php icon('code'); ?> Редактировать тексты</a>
+        <p>Подключайте поля страниц в шаблоне index.php.</p>
+        <a class="button button-on-dark" href="<?= e(themeEditorUrl('index.php')) ?>"><?php icon('code'); ?> Открыть шаблон</a>
     </div>
     <div class="welcome-art" aria-hidden="true">
         <span class="art-orbit"></span><span class="art-tile art-tile-bottom"></span><span class="art-tile art-tile-middle"></span>
