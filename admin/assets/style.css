@@ -199,8 +199,8 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 .website-link { min-height: 36px; }
 .sidebar-close, .menu-toggle, .mobile-overlay { display: none; }
 #main.admin-content {
-    width: 100%; max-width: 1740px; min-width: 0;
-    padding: 26px 12px 40px; margin-inline: auto; animation: enter .3s ease both;
+    width: 100%; max-width: 1450px; min-width: 0;
+    padding: 26px clamp(18px, 3.1vw, 50px) 40px; margin-inline: auto; animation: enter .3s ease both;
 }
 @media (min-width: 761px) {
     .sidebar { padding: 24px 6px 14px; gap: 26px; }
