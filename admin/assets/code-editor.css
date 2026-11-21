@@ -79,6 +79,23 @@
 .code-panel .cm-s-plugy .cm-meta, .code-panel .cm-s-plugy .cm-operator, .code-panel .cm-s-plugy .cm-bracket { color: #b6c7e6; }
 .code-panel .cm-s-plugy .cm-builtin { color: #96dcda; }
 .code-panel .cm-s-plugy .cm-error { color: #ff9cae; }
+.code-context {
+    position: fixed; z-index: 20; min-width: 165px; padding: 5px; color: #e2edff;
+    background: #18243a; border: 1px solid #425574; border-radius: 10px; box-shadow: 0 10px 28px #07132666;
+}
+.code-context button {
+    display: block; width: 100%; border: 0; padding: 8px 10px; border-radius: 6px; text-align: left;
+    background: transparent; color: inherit; font-size: 14px;
+}
+.code-context button:hover:enabled, .code-context button:focus-visible { background: #29436f; }
+.code-context button:disabled { opacity: .45; }
+.code-context [data-code-command="format"] { border-top: 1px solid #425574; }
+.code-paste { width: min(90vw, 425px); padding: 18px; }
+.code-paste::backdrop { background: #07132699; }
+.code-paste form { display: grid; gap: 12px; }
+.code-paste textarea { width: 100%; padding: 8px; }
+.code-paste form > div { display: flex; justify-content: end; gap: 8px; }
+.code-clipboard-proxy { position: fixed; left: -9999px; top: 0; }
 
 .code-files { min-width: 0; padding: 15px 10px 10px; }
 .code-files h2 { margin: 0 7px 11px; font-size: 16px; }

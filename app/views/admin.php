@@ -22,6 +22,9 @@ $nav = [
         <link rel="stylesheet" href="<?= e(assetUrl('codemirror/codemirror.css', $root)) ?>">
         <link rel="stylesheet" href="<?= e(assetUrl('code-editor.css', $root)) ?>">
         <script src="<?= e(assetUrl('codemirror/codemirror.js', $root)) ?>" defer></script>
+        <?php foreach (['beautify.js', 'beautify-css.js', 'beautify-html.js'] as $formatter): ?>
+            <script src="<?= e(assetUrl('beautify/' . $formatter, $root)) ?>" defer></script>
+        <?php endforeach; ?>
         <script src="<?= e(assetUrl('code-editor.js', $root)) ?>" defer></script>
     <?php endif; ?>
 </head>

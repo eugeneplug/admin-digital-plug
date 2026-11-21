@@ -7,6 +7,21 @@
     <button class="button button-primary" form="theme-editor" type="submit"><?php icon('check'); ?> Сохранить</button>
 </div>
 
+<div class="code-context" data-code-context role="group" aria-label="Действия с кодом" hidden>
+    <button type="button" data-code-command="copy">Копировать</button>
+    <button type="button" data-code-command="paste">Вставить</button>
+    <button type="button" data-code-command="cut">Вырезать</button>
+    <button type="button" data-code-command="format">Форматировать</button>
+</div>
+<dialog class="panel code-paste" data-code-paste>
+    <form method="dialog">
+        <label for="code-paste-text">Вставьте код через Ctrl+V или Cmd+V</label>
+        <textarea id="code-paste-text" rows="5" spellcheck="false"></textarea>
+        <div><button class="button button-secondary" value="cancel">Отмена</button>
+        <button class="button button-primary" value="paste">Вставить</button></div>
+    </form>
+</dialog>
+
 <div class="code-layout">
     <form class="code-panel" id="theme-editor" action="<?= e(themeEditorUrl($themeFile)) ?>" method="post" data-unsaved="<?= $error === '' ? 'false' : 'true' ?>">
         <?php csrfField(); ?>
