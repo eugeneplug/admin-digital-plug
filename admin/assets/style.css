@@ -40,6 +40,8 @@ button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
 .brand { display: inline-block; width: max-content; font-size: 25px; font-weight: 800; line-height: 1.15; letter-spacing: -.065em; }
 .brand-name { white-space: nowrap; }
 .brand-name > span { color: var(--brand-accent, var(--blue)); }
+.brand-version { display: block; margin-top: 3px; color: #68748b; font-size: 10px; font-weight: 500; line-height: 1.2; letter-spacing: 0; text-align: left; }
+.login-page .brand-version, .sidebar .brand-version { color: #a3aec1; }
 .login-page .brand, .sidebar .brand { --brand-accent: #79a6ff; }
 .button {
     display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 41px; padding: 9px 14px;

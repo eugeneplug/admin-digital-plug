@@ -72,4 +72,5 @@ function icon(string $name, string $class = ''): void
 function brand(): void
 {
     echo '<span class="brand-name" role="img" aria-label="Plugy Engine">Plugy<span>Engine</span></span>';
+    echo '<small class="brand-version">version.1.0</small>';
 }
